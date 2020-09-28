@@ -46,6 +46,8 @@ import java.util.function.Supplier;
  * the {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
  * interface in order to allow for applying any bean definition readers to it.
  *
+ * --> GenericApplicationContext实现BeanDefinitionRegistry的目的是为了允许注册bean定义
+ *
  * <p>Typical usage is to register a variety of bean definitions via the
  * {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
  * interface and then call {@link #refresh()} to initialize those beans
@@ -330,6 +332,12 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
     // Implementation of BeanDefinitionRegistry
     //---------------------------------------------------------------------
 
+    /**
+     * 注册bean定义，
+     * @param beanName       the name of the bean instance to register
+     * @param beanDefinition definition of the bean instance to register
+     * @throws BeanDefinitionStoreException
+     */
     @Override
     public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
             throws BeanDefinitionStoreException {

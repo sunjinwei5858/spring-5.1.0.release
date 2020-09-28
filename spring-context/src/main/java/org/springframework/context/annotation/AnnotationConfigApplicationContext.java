@@ -67,6 +67,11 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
      * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
      */
     public AnnotationConfigApplicationContext() {
+        /**
+         * 看uml类图看到AnnotationConfigApplicationContext继承GenericApplicationContext，实现了BeanDefinitionRegistry接口
+         * 所以AnnotatedBeanDefinitionReader和ClassPathBeanDefinitionScanner的构造函数可以传入BeanDefinitionRegistry接口的子类
+         *
+         */
         this.reader = new AnnotatedBeanDefinitionReader(this);
         this.scanner = new ClassPathBeanDefinitionScanner(this);
     }
@@ -90,8 +95,19 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
      *                         e.g. {@link Configuration @Configuration} classes
      */
     public AnnotationConfigApplicationContext(Class<?>... annotatedClasses) {
+        /**
+         * 构造函数
+         */
         this();
+        /**
+         * 注册配置类的bean定义到beanDefinitionMap
+         * AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MainConfig.class);
+         * 因为我们是使用java config 注解配置，取代了beans.xml，所以使用的AnnotatedBeanDefinitionReader进行注册配置类的bean定义
+         */
         register(annotatedClasses);
+        /**
+         * 初始化bean
+         */
         refresh();
     }
 
@@ -103,6 +119,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
      */
     public AnnotationConfigApplicationContext(String... basePackages) {
         this();
+        /**
+         * new AnnotationConfigApplicationContext("sunjinwei.service");
+         * 所以使用的是 ClassPathBeanDefinitionScanner进行扫描
+         */
         scan(basePackages);
         refresh();
     }
@@ -153,6 +173,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
     //---------------------------------------------------------------------
 
     /**
+     * 注册配置类的bean定义到beanDefinitionMap
+     * <p>
      * Register one or more annotated classes to be processed.
      * <p>Note that {@link #refresh()} must be called in order for the context
      * to fully process the new classes.
