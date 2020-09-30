@@ -34,7 +34,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /**
- * 抽象bean定义：
+ * 抽象bean定义： 通用属性
  * 抽取一些公共的设置bean定义属性的方法
  * <p>
  * Base class for concrete, full-fledged {@link BeanDefinition} classes,
@@ -148,13 +148,25 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     @Nullable
     private volatile Object beanClass;
 
+    /**
+     * bean的作用域scope
+     */
     @Nullable
     private String scope = SCOPE_DEFAULT;
 
+    /**
+     * 是否是抽象
+     */
     private boolean abstractFlag = false;
 
+    /**
+     * 是否懒加载 默认不是
+     */
     private boolean lazyInit = false;
 
+    /**
+     * 自动注入模式
+     */
     private int autowireMode = AUTOWIRE_NO;
 
     private int dependencyCheck = DEPENDENCY_CHECK_NONE;
