@@ -198,6 +198,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
     }
 
     /**
+     * 解析xml中的import标签
+     * <p>
      * Parse an "import" element and load the bean definitions
      * from the given resource into the bean factory.
      */
