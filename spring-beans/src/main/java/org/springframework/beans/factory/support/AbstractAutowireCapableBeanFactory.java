@@ -395,12 +395,38 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return result;
     }
 
+    /**
+     * 真正调用后置处理器的地方!!!!
+     * aop在此处生成代理对象
+     *
+     * @param existingBean the new bean instance
+     *                     (only passed to {@link BeanPostProcessor BeanPostProcessors};
+     *                     can follow the {@link #ORIGINAL_INSTANCE_SUFFIX} convention in order to
+     *                     enforce the given instance to be returned, i.e. no proxies etc)
+     * @param beanName
+     * @return
+     * @throws BeansException
+     */
     @Override
     public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
             throws BeansException {
 
         Object result = existingBean;
-        for (BeanPostProcessor processor : getBeanPostProcessors()) {
+
+        /**
+         * 获取所有的后置处理器
+         */
+        List<BeanPostProcessor> beanPostProcessors = getBeanPostProcessors();
+
+        for (BeanPostProcessor processor : beanPostProcessors) {
+            /**
+             * 【很重要!!!!】aop和事务都是在这里生成代理对象
+             * 我们aop @EnableAspectJAutoProxy 为我们容器 AnnotationAwareAspectJAutoProxyCreator
+             * 我们事务注解 @EnableTransactionManagement 为我们容器导入了InfrastructureAdvisorAutoProxy
+             * 都是实现了BeanPostProcessor接口，InstantiationAwareBeanPostProcessor
+             * 在这里实现的是BeanPostProcessor接口的postProcessAfterInitialization来生成我们的代理对象
+             *
+             */
             Object current = processor.postProcessAfterInitialization(result, beanName);
             if (current == null) {
                 return result;
@@ -454,6 +480,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         try {
             // Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+            /**
+             * 后置处理器的前置处理
+             */
             Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
             if (bean != null) {
                 return bean;
@@ -533,13 +562,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 logger.trace("Eagerly caching bean '" + beanName +
                         "' to allow for resolving potential circular references");
             }
+            /**
+             * 这里将早期对象添加到三级缓存中！！！
+             */
             addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
         }
 
         // Initialize the bean instance.
         Object exposedObject = bean;
         try {
+            /**
+             * bean的第二阶段：属性注入 调用set方法进行赋值
+             */
             populateBean(beanName, mbd, instanceWrapper);
+            /**
+             * bean的第三阶段：初始化bean-->初始化方法,可能返回代理对象
+             */
             exposedObject = initializeBean(beanName, exposedObject, mbd);
         } catch (Throwable ex) {
             if (ex instanceof BeanCreationException && beanName.equals(((BeanCreationException) ex).getBeanName())) {
@@ -1023,8 +1061,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
                 Class<?> targetType = determineTargetType(beanName, mbd);
                 if (targetType != null) {
+                    /**
+                     * 调用applyBeanPostProcessorsBeforeInstantiation 前置处理
+                     */
                     bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
                     if (bean != null) {
+                        /**
+                         * 后置处理!!!
+                         */
                         bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
                     }
                 }
@@ -1687,6 +1731,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 
     /**
+     * 第三阶段：初始化bean
+     * 1。aware接口调用 主要是初始化 invokeAwareMethods 包括BeanNameAware,BeanClassLoaderAware,BeanFactoryAware
+     * 2。
      * Initialize the given bean instance, applying factory callbacks
      * as well as init methods and bean post processors.
      * <p>Called from {@link #createBean} for traditionally defined beans,
@@ -1717,14 +1764,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         Object wrappedBean = bean;
         if (mbd == null || !mbd.isSynthetic()) {
             /**
-             *
+             * 后置处理器执行BeanPostProcessor.postProcessBeforeInitialization()
              */
             wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
         }
 
         try {
             /**
-             * 初始化方法
+             * 初始化方法执行，
              */
             invokeInitMethods(beanName, wrappedBean, mbd);
         } catch (Throwable ex) {
@@ -1734,7 +1781,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
         if (mbd == null || !mbd.isSynthetic()) {
             /**
-             *
+             * 后置处理器执行BeanPostProcessor.postProcessAfterInitialization() aop在此处生成代理对象
              */
             wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
         }
@@ -1760,7 +1807,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     /**
-     * 自定的init方法
+     * 执行初始化方法
+     * 先执行实现了InitializingBean接口的afterPropertiesSet方法
+     * 再初始化<bean>标签对应的init-method属性中的方法
      * <p>
      * Give a bean a chance to react now all its properties are set,
      * and a chance to know about its owning bean factory (this object).
