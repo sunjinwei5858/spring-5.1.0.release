@@ -57,6 +57,8 @@ public class AnnotatedBeanDefinitionReader {
 
 
     /**
+     * 这里进行创建环境！！！
+     *
      * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry.
      * If the registry is {@link EnvironmentCapable}, e.g. is an {@code ApplicationContext},
      * the {@link Environment} will be inherited, otherwise a new
@@ -271,7 +273,7 @@ public class AnnotatedBeanDefinitionReader {
         BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
         definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
         /**
-         * 注册bean定义
+         * 调用BeanDefinitionReaderUtils工具类，进行注册bean定义
          */
         BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
     }
