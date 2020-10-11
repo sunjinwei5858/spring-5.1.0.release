@@ -34,6 +34,15 @@ import java.lang.annotation.Annotation;
 import java.util.function.Supplier;
 
 /**
+ * 这个类的作用：
+ * 1。方便编程式动态注册一个带注解的bean
+ * 2。可以替代ClassPathBeanDefinitionScanner，具备相同的解析功能，ClassPathBeanDefinitionScanner是spring完成扫描的核心类。
+ * 比如注册配置类，因为配置类无法自己扫描自己，所以AnnotatedBeanDefinitionReader的作用就是注册配置类。
+ * 简而言之：
+ * spring如果想要完成扫描，必须先提供配置类AppConfig.java,所以AppConfig要在一开始就手动注册给Spring【由AnnotatedBeanDefinitionReader完成】，
+ * spring得到AppConfig.class之后把他解析成bean定义对象，然后再去获取配置类上面的注解@ComponentScan的包路径，再注册包下面的类的bean定义【由ClassPathBeanDefinitionScanner完成】
+ *
+ * <p>
  * Convenient adapter for programmatic registration of annotated bean classes.
  * This is an alternative to {@link ClassPathBeanDefinitionScanner}, applying
  * the same resolution of annotations but for explicitly registered classes only.
@@ -58,7 +67,7 @@ public class AnnotatedBeanDefinitionReader {
 
     /**
      * 这里进行创建环境！！！
-     *
+     * <p>
      * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry.
      * If the registry is {@link EnvironmentCapable}, e.g. is an {@code ApplicationContext},
      * the {@link Environment} will be inherited, otherwise a new
