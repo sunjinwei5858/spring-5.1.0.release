@@ -50,7 +50,8 @@ import java.beans.PropertyDescriptor;
 public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 
     /**
-     * 这个方法可以提前创建bean，功能非常强大！！！
+     * 这个方法可以提前创建bean，功能非常强大
+     * 因为入参传入的是beanClass，所以很多实现类 比如aop 事务 都实现了该接口，可以进行扩展
      * <p>
      * Apply this BeanPostProcessor <i>before the target bean gets instantiated</i>.
      * The returned bean object may be a proxy to use instead of the target bean,
@@ -88,8 +89,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
      *
      * @param bean     the bean instance created, with properties not having been set yet
      * @param beanName the name of the bean
-     * @return
-     * {@code true} if properties should be set on the bean;  true代表属性可以注入
+     * @return {@code true} if properties should be set on the bean;  true代表属性可以注入
      * {@code false} if property population should be skipped. false代表属性注入需要忽略
      * Normal implementations should return {@code true}. 正常的实现应该返回true 所以默认为true
      * Returning {@code false} will also prevent any subsequent InstantiationAwareBeanPostProcessor
@@ -102,6 +102,8 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
     }
 
     /**
+     * 属性注入就是在这里进行完成!!!
+     * <p>
      * Post-process the given property values before the factory applies them
      * to the given bean, without any need for property descriptors.
      * <p>Implementations should return {@code null} (the default) if they provide a custom
@@ -128,6 +130,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
     }
 
     /**
+     * 该重载方法已经被弃用了，@Deprecated标识
+     * <p>
+     * <p>
      * Post-process the given property values before the factory applies them
      * to the given bean. Allows for checking whether all dependencies have been
      * satisfied, for example based on a "Required" annotation on bean property setters.
