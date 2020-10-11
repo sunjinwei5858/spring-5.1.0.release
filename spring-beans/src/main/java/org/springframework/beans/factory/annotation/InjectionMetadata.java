@@ -85,6 +85,8 @@ public class InjectionMetadata {
     /**
      * 不管是使用jdk自带的@Resource注解还是spring的@Autowire注解，通过InjectionMetadata进行属性注入
      * !!!这里进行属性注入
+     * 注意：这里的InjectedElement类型都是AutowiredFieldElement，属于AutowiredAnnotationBeanPostProcessor的内部类，继承了InjectedElement
+     * 所以调用的inject方法也是AutowiredFieldElement重写的inject方法
      *
      * @param target
      * @param beanName
@@ -101,7 +103,7 @@ public class InjectionMetadata {
                     logger.trace("Processing injected element of bean '" + beanName + "': " + element);
                 }
                 /**
-                 *
+                 * 调用的是 AutowiredAnnotationBeanPostProcessor.AutowiredMethodElement#inject()
                  */
                 element.inject(target, beanName, pvs);
             }
@@ -131,7 +133,8 @@ public class InjectionMetadata {
 
 
     /**
-     * A single injected element.
+     * A single injected element. 这个是抽象类，使用了模板方法，抽取了inject的公共逻辑，
+     * AutowiredAnnotationBeanPostProcessor.AutowiredFieldElement 内部类继承了该抽象类，重写inject方法
      */
     public abstract static class InjectedElement {
 

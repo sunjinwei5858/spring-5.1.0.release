@@ -677,6 +677,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     // Implementation of ConfigurableListableBeanFactory interface
     //---------------------------------------------------------------------
 
+    /**
+     * 这个resolvableDependencies map容器spring没有开放，但是提供了registerResolvableDependency的api给程序员调用
+     *
+     * @param dependencyType the dependency type to register. This will typically
+     *                       be a base interface such as BeanFactory, with extensions of it resolved
+     *                       as well if declared as an autowiring dependency (e.g. ListableBeanFactory),
+     *                       as long as the given value actually implements the extended interface.
+     * @param autowiredValue the corresponding autowired value. This may also be an
+     *                       implementation of the {@link org.springframework.beans.factory.ObjectFactory}
+     */
     @Override
     public void registerResolvableDependency(Class<?> dependencyType, @Nullable Object autowiredValue) {
         Assert.notNull(dependencyType, "Dependency type must not be null");
@@ -887,6 +897,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
     /**
      * 实现注册bean定义的接口
+     * 对于 beanDefinition 的注册 ，或许很多人认为的方式就是将 beanDefinition 直接放入 map
+     * 中就好了， 使用 beanName作为 key。 确实， Spring就是这么做的，只不过除此之外，它还做
+     * 了点别的事情。
      *
      * @param beanName       the name of the bean instance to register
      * @param beanDefinition definition of the bean instance to register
@@ -901,6 +914,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
         if (beanDefinition instanceof AbstractBeanDefinition) {
             try {
+                /**
+                 * 注册前的 最后一次校验 ，这里的校!J生不同于之丽的 XML 文件校验，
+                 * 主要是对于AbstractBeanDefinition属性中的 methodOverrides 校验，
+                 * 检测methodOverrides是否与工厂方法并存或者methodOverrides对应的方法根本不存在
+                 */
                 ((AbstractBeanDefinition) beanDefinition).validate();
             } catch (BeanDefinitionValidationException ex) {
                 throw new BeanDefinitionStoreException(beanDefinition.getResourceDescription(), beanName,
@@ -943,6 +961,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
              */
             if (hasBeanCreationStarted()) {
                 // Cannot modify startup-time collection elements anymore (for stable iteration)
+                /**
+                 * 防止线程安全
+                 */
                 synchronized (this.beanDefinitionMap) {
                     System.out.println("---this.beanDefinitionMap.put(beanName, beanDefinition);" + beanName);
                     this.beanDefinitionMap.put(beanName, beanDefinition);
@@ -1168,6 +1189,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         return null;
     }
 
+    /**
+     * 依赖注入的bean
+     *
+     * @param descriptor         the descriptor for the dependency (field/method/constructor)
+     * @param requestingBeanName the name of the bean which declares the given dependency
+     * @param autowiredBeanNames a Set that all names of autowired beans (used for
+     *                           resolving the given dependency) are supposed to be added to
+     * @param typeConverter      the TypeConverter to use for populating arrays and collections
+     * @return
+     * @throws BeansException
+     */
     @Override
     @Nullable
     public Object resolveDependency(DependencyDescriptor descriptor, @Nullable String requestingBeanName,
@@ -1185,12 +1217,25 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
             Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
                     descriptor, requestingBeanName);
             if (result == null) {
+                /**
+                 * !!!!
+                 */
                 result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
             }
             return result;
         }
     }
 
+    /**
+     * 进行doGetBean()
+     *
+     * @param descriptor
+     * @param beanName
+     * @param autowiredBeanNames
+     * @param typeConverter
+     * @return
+     * @throws BeansException
+     */
     @Nullable
     public Object doResolveDependency(DependencyDescriptor descriptor, @Nullable String beanName,
                                       @Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) throws BeansException {
@@ -1221,7 +1266,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
                 return multipleBeans;
             }
 
+            /**
+             * 找到ApplicationConetext 这些通用的bean
+             */
             Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
+
             if (matchingBeans.isEmpty()) {
                 if (isRequired(descriptor)) {
                     raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
@@ -1255,7 +1304,14 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
             if (autowiredBeanNames != null) {
                 autowiredBeanNames.add(autowiredBeanName);
             }
+
+            /**
+             * 比如userService 就属于class 那么进入该方法 resolveCandidate方法内部有getBean调用，循环依赖 此时会去实例化属性
+             */
             if (instanceCandidate instanceof Class) {
+                /**
+                 * 调用getBean的入口
+                 */
                 instanceCandidate = descriptor.resolveCandidate(autowiredBeanName, type, this);
             }
             Object result = instanceCandidate;
@@ -1418,11 +1474,22 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
                 this, requiredType, true, descriptor.isEager());
         Map<String, Object> result = new LinkedHashMap<>(candidateNames.length);
+        /**
+         * 其实 this.resolvableDependencies 这个Map里面就四个对象
+         * ResourceLoader ApplicationEventPublisher ApplicationContext BeanFactory
+         * 所以在@Autowired 注入ApplicationContext的时候这个for循环会进入，
+         * 并且直接返回了map当中已经存在好的ApplicationContext对象以便完成属性的注入；
+         * 但是如果普通bean的注入，比如X注入Y，这不会进入这个for循环
+         */
         for (Map.Entry<Class<?>, Object> classObjectEntry : this.resolvableDependencies.entrySet()) {
             Class<?> autowiringType = classObjectEntry.getKey();
             if (autowiringType.isAssignableFrom(requiredType)) {
                 Object autowiringValue = classObjectEntry.getValue();
                 autowiringValue = AutowireUtils.resolveAutowiringValue(autowiringValue, requiredType);
+                /**
+                 * 如果是注入ApplicationContext这个requiredType和autowiringType进行比较
+                 * 如果匹配 那么break遍历
+                 */
                 if (requiredType.isInstance(autowiringValue)) {
                     result.put(ObjectUtils.identityToString(autowiringValue), autowiringValue);
                     break;

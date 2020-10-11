@@ -36,7 +36,9 @@ public class MyInstantiationAwareBeanPostProcessor implements InstantiationAware
 
     @Override
     public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
-        return false;
+        System.out.println("==postProcessAfterInitialization==返回boolean");
+
+        return true;
     }
 
     @Override
@@ -55,6 +57,7 @@ public class MyInstantiationAwareBeanPostProcessor implements InstantiationAware
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        System.out.println("==postProcessAfterInitialization==返回Object");
         return null;
     }
 

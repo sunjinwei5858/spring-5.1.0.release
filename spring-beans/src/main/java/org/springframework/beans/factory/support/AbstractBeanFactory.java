@@ -268,8 +268,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                 }
             }
             /**
+             * 在 getBean 方法中， getObjectForBeanInstance 是个高频率使用的方法
+             * 从bean的实例中获取对象
+             *
              * 返回对应的实例，有时候诸如BeanFactory的情况并不是直接返回实例本身而是返回指定方法返回的实例。
-             * 假如我们需要对工厂bean进行处理，那么这里得到的其实是工厂bean的初始状态，
+             * 假如我们需要对FactoryBean进行处理，那么这里得到的其实是工厂bean的初始状态，
              * 但是我们真正需要的是工厂bean中定义的factory-method方法中返回的bean。
              * getObjectForBeanInstance方法就是完成这个工作的
              */
@@ -1660,12 +1663,23 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
         // Now we have the bean instance, which may be a normal bean or a FactoryBean.
         // If it's a FactoryBean, we use it to create a bean instance, unless the
         // caller actually wants a reference to the factory.
+        /**
+         * 现在我们有了bean的实例，这个实例可能是正常的bean或者是Factorybean
+         * 如果是Factorybean，那么使用它创建实例。
+         * 但是如果用户想要直接获取工厂实例而不是工厂的getObject()方法所对应的实例那么传入的name应该加入前缀&
+         * BeanFactoryUtils.isFactoryDereference(name) 该方法就是判断 有没有加 &
+         */
         if (!(beanInstance instanceof FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) {
             return beanInstance;
         }
-
+        /**
+         * 加载Factorybean
+         */
         Object object = null;
         if (mbd == null) {
+            /**
+             * 尝试从缓存中加载bean
+             */
             object = getCachedObjectForFactoryBean(beanName);
         }
         if (object == null) {
@@ -1676,6 +1690,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                 mbd = getMergedLocalBeanDefinition(beanName);
             }
             boolean synthetic = (mbd != null && mbd.isSynthetic());
+            /**
+             * 注意和getObjectForBeanInstance区别 长得很像
+             */
             object = getObjectFromFactoryBean(factory, beanName, !synthetic);
         }
         return object;

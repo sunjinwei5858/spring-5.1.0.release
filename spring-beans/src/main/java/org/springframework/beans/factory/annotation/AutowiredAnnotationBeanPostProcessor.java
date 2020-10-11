@@ -50,9 +50,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * !!!!
  * 该后置处理器支持的注解是@Autowired @Value
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that autowires annotated fields, setter methods and arbitrary config methods.
  * Such members to be injected are detected through a Java 5 annotation: by default,
@@ -358,7 +358,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
         /**
          * findAutowiringMetadata 见名知意
-         * 找到@Autowire注解修饰的属性
+         * 找到@Autowire注解修饰的属性，并且使用内部类AutowiredMethodElement进行封装属性!!!，可以调用自己的inject逻辑
          */
         InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
         try {
@@ -400,6 +400,14 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
     }
 
 
+    /**
+     * 该方法就是为调用内部类AutowiredMethodElement重写的inject方法做准备，封装！！！
+     *
+     * @param beanName
+     * @param clazz
+     * @param pvs
+     * @return
+     */
     private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz, @Nullable PropertyValues pvs) {
         // Fall back to class name as cache key, for backwards compatibility with custom callers.
         String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
@@ -412,6 +420,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
                     if (metadata != null) {
                         metadata.clear(pvs);
                     }
+                    /**
+                     * 主要的作用就是将属性使用内部类AutowiredMethodElement封装而不是父类InjectionMetadata封装，子类重写inject方法
+                     * 这种设计值得学习!!!!!
+                     */
                     metadata = buildAutowiringMetadata(clazz);
                     this.injectionMetadataCache.put(cacheKey, metadata);
                 }
@@ -462,6 +474,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
                     }
                     boolean required = determineRequiredStatus(ann);
                     PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
+
+                    /**
+                     * 在这里将类中的属性使用AutowiredMethodElement进行封装!!!，所以inject调用的肯定是子类AutowiredMethodElement的inject方法
+                     */
                     currElements.add(new AutowiredMethodElement(method, required, pd));
                 }
             });
@@ -579,8 +595,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
                 TypeConverter typeConverter = beanFactory.getTypeConverter();
                 try {
                     /**
-                     * 这里进行生成依赖的bean!!!!
+                     * 这里进行生成依赖的bean!!!! 后置处理器
                      * value-->bean
+                     * 将一些通用的bean 比如ApplicationContext ResourceLoader ...
+                     *
                      */
                     value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
                 } catch (BeansException ex) {

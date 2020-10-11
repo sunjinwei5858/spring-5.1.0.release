@@ -54,6 +54,9 @@ import static org.springframework.context.annotation.AnnotationConfigUtils.CONFI
 
 /**
  * 该后置处理器用来扫描 @Configuration @Bean @ComponentScan 这些类
+ *
+ * ConfigurationClassPostProcessor便是一个spring自己实现的bean工厂后置处理器，
+ * 这个类笔者认为是阅读spring源码当中最重要的类，没有之一；他完成的功能太多了
  * <p>
  * <p>
  * {@link BeanFactoryPostProcessor} used for bootstrapping processing of
@@ -221,7 +224,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
         this.registriesPostProcessed.add(registryId);
 
         /**
-         *
+         * 调用后置处理器的方法
          */
         processConfigBeanDefinitions(registry);
     }

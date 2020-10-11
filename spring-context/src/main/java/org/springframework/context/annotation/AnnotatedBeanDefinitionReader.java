@@ -66,7 +66,7 @@ public class AnnotatedBeanDefinitionReader {
 
 
     /**
-     * 这里进行创建环境！！！
+     * 初始化AnnotatedBeanDefinitionReader【解析配置类】的时候进行创建Environment
      * <p>
      * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry.
      * If the registry is {@link EnvironmentCapable}, e.g. is an {@code ApplicationContext},

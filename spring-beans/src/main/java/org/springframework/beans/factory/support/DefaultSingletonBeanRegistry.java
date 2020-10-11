@@ -236,7 +236,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
                      */
                     ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
                     if (singletonFactory != null) {
-                        // 三级缓存存在 那么调用getObject()方法
+                        // 三级缓存存在 那么调用getObject()方法 如果配置了aop 这里会进行偷梁换柱 将targe换成proxy
                         singletonObject = singletonFactory.getObject();
                         // 添加到二级缓存中
                         this.earlySingletonObjects.put(beanName, singletonObject);
@@ -279,7 +279,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
                     logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
                 }
                 /**
-                 * 记录加载状态 当前正要创建的 bean记录在缓存中，这样便可以对循环依赖进行检测。
+                 * 记录加载状态 当前正要创建的bean添加到正在创建的set集合中，这样便可以对循环依赖进行检测。
                  */
                 beforeSingletonCreation(beanName);
                 boolean newSingleton = false;
@@ -289,7 +289,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
                 }
                 try {
                     /**
-                     * 这里才是真正创建单例的方法 singletonFactory.getObject();
+                     * 这里才是真正创建早期对象引用的方法 singletonFactory.getObject();
                      * 通过入参传入的ObjectFactory的个体Object方法实例化bean
                      */
                     singletonObject = singletonFactory.getObject();
@@ -418,7 +418,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
          * 这里其实进行两步校验
          * 当前正要创建的 bean记录在缓存中，这样便可以对循环依赖进行检测。
          */
-        if (!this.inCreationCheckExclusions.contains(beanName) && !this.singletonsCurrentlyInCreation.add(beanName)) {
+        boolean contains = this.inCreationCheckExclusions.contains(beanName);
+        /**
+         * singletonsCurrentlyInCreation是一个set集合，如果add不成功那么抛出异常 说明不是正在创建的bean
+         */
+        boolean add = this.singletonsCurrentlyInCreation.add(beanName);
+        if (!contains && !add) {
             throw new BeanCurrentlyInCreationException(beanName);
         }
     }

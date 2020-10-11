@@ -62,6 +62,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
      * 初始化两个beanDefinition解析类
      * AnnotatedBeanDefinitionReader：处理配置类 MainConfig
      * ClassPathBeanDefinitionScanner：处理包扫描下面的一系列类 比如mybatis中的mapper包,@MapperScan,或者@ComponentScan
+     * 但是真正去包扫描时 而是又重新new了一个ClassPathBeanDefinitionScanner去扫描，这是为什么呢？
      * <p>
      * Create a new AnnotationConfigApplicationContext that needs to be populated
      * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
@@ -70,7 +71,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
         /**
          * 看uml类图看到AnnotationConfigApplicationContext继承GenericApplicationContext，实现了BeanDefinitionRegistry接口
          * 所以AnnotatedBeanDefinitionReader和ClassPathBeanDefinitionScanner的构造函数可以传入BeanDefinitionRegistry接口的子类
-         *
+         * AnnotatedBeanDefinitionReader初始化的时候会进行getEnvironment获取环境
          */
         this.reader = new AnnotatedBeanDefinitionReader(this);
         this.scanner = new ClassPathBeanDefinitionScanner(this);
@@ -99,12 +100,18 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
          * 构造函数
          */
         this();
+
+        // 如果想关闭循环依赖 那么可以设置为false
+        //setAllowCircularReferences(false);
+
         /**
          * 注册配置类的bean定义到beanDefinitionMap
          * AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MainConfig.class);
          * 因为我们是使用java config 注解配置，取代了beans.xml，所以使用的AnnotatedBeanDefinitionReader进行注册配置类的bean定义
          */
         register(annotatedClasses);
+
+
         /**
          * 初始化bean
          */
