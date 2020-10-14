@@ -224,7 +224,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
         this.registriesPostProcessed.add(registryId);
 
         /**
-         * 调用后置处理器的方法
+         * 调用后置处理器的方法 1。注册@Conponentscan扫描下面的类的bean定义 2。注册@EnableXXX中需要用到的后置处理器的bean定义
          */
         processConfigBeanDefinitions(registry);
     }
@@ -262,7 +262,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
         List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 
         /**
-         *
+         * 获取之前已经注册好的bean定义，是为了进行扫描注册好bean定义的配置类下面需要扫描的类注册到bean定义 比如userService studentService
          */
         String[] candidateNames = registry.getBeanDefinitionNames();
 
@@ -316,7 +316,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
         Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
         do {
             /**
-             * 这里parse将userService注册到bean定义map中
+             * 这里parse做了很多事情：
+             * 1.扫描
+             * 1。将userService注册到bean定义map中
+             * 2。将@EnableXXX 注解中@Import中的封装到Con
              */
             parser.parse(candidates);
             parser.validate();
@@ -330,6 +333,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                         registry, this.sourceExtractor, this.resourceLoader, this.environment,
                         this.importBeanNameGenerator, parser.getImportRegistry());
             }
+            /**
+             * 这里进行注册
+             * 配置在MyApsct上的@EnableAspectJAutoProxy()导入的AspectJAutoProxyRegistrar这个ImportBeanDefinitionRegistrar接口实现类注册到bean定义中去
+             */
             this.reader.loadBeanDefinitions(configClasses);
             alreadyParsed.addAll(configClasses);
 
