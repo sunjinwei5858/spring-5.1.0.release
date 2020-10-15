@@ -484,7 +484,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
              * 后置处理器的前置处理
              * 一般不会在此处生成代理对象，为什么不能生成代理对象，不管是我们的jdk还是cglib代理都不会在此处进行代理
              * 因为我们的真实对象没有生成，所以在这里不会进行生成代理对象，
-             * 那么这一步是我们aop和事务的关键，因为在这里进行解析我们的切面和进行缓存
+             * 那么这一步是我们aop和事务的关键，因为在这里进行解析我们的切面和进行缓存切面信息,
+             * 走BeanFactoryAspectJAdvisorsBuilder#buildAspectJAdvisors() if (aspectNames == null) 逻辑
              */
             Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
             if (bean != null) {
@@ -578,7 +579,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             /**
              * 将早期对象【已经构造化但是还没属性注入】添加到三级缓存中！！！
              */
-            addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+            //addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+
+            addSingletonFactory(beanName, new ObjectFactory() {
+                @Override
+                public Object getObject() {
+                    Object earlyBeanReference = getEarlyBeanReference(beanName, mbd, bean);
+                    return earlyBeanReference;
+                }
+            });
         }
 
         // Initialize the bean instance.
@@ -942,6 +951,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                  * SmartInstantiationAwareBeanPostProcessor该后置处理器的getEarlyBeanReference方法就是获取到早期对象
                  * 这个后置处理器可以对早期对象进行扩展，进行修改，这就是该
                  * 可以在加入三级缓存之前进行操作
+                 * 比如aop就可以进行偷梁换柱!!!!!!
                  */
                 if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
                     SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
@@ -1119,9 +1129,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 /**
                  * 注意：
                  * InstantiationAwareBeanPostProcessor这个接口重载了BeanPostProcessor接口的方法
-                 * 这里使用了InstantiationAwareBeanPostProcessor自己本身的postProcessBeforeInstantiation，传入beanClass,
-                 * 而不是object。
-                 * 遍历到如果是aop的AbstractAutoProxyCreator后置处理器，aop解析切面以及事务解析 事务注解都是在这里完成的
+                 * 这里使用了InstantiationAwareBeanPostProcessor自己本身的postProcessBeforeInstantiation，传入beanClass,而不是object。
+                 *
+                 * 当遍历到是aop的AbstractAutoProxyCreator后置处理器，配置类MainConfig中@EnableAspectJAutoProxy，aop解析切面以及事务解析 事务注解都是在这里完成的
+                 * aop会将切面进行缓存，但是事务不会加入缓存。要知道原因！！！高级面试题
+                 * 走BeanFactoryAspectJAdvisorsBuilder#buildAspectJAdvisors() if (aspectNames == null) 逻辑
                  */
                 Object result = ibp.postProcessBeforeInstantiation(beanClass, beanName);
                 if (result != null) {
@@ -1763,7 +1775,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     /**
      * 第三阶段：初始化bean
      * 1。aware接口调用 主要是初始化 invokeAwareMethods 包括BeanNameAware,BeanClassLoaderAware,BeanFactoryAware
-     * 2。
+     * 2。beanPostProcessor 后置处理器的在执行自定义的init初始化之前和之后调用后置处理器的
+     * applyBeanPostProcessorsBeforeInitialization：执行@PostConstruct方法
+     * initMethod: 这里调用两个方法，先执行实现了InitializaBean的afterProperties()方法；然后自定义的initMethod
+     * applyBeanPostProcessorsAfterInitialization:
+     *
      * Initialize the given bean instance, applying factory callbacks
      * as well as init methods and bean post processors.
      * <p>Called from {@link #createBean} for traditionally defined beans,
@@ -1788,20 +1804,25 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 return null;
             }, getAccessControlContext());
         } else {
+            /**
+             * 如果bean实现了Aware接口，这里回调aware接口的方法
+             */
             invokeAwareMethods(beanName, bean);
         }
 
         Object wrappedBean = bean;
         if (mbd == null || !mbd.isSynthetic()) {
             /**
-             * 后置处理器执行BeanPostProcessor.postProcessBeforeInitialization()，生命周期方法回调顺序：1 如果有@PostConstrcut()注解
+             * 后置处理器执行BeanPostProcessor.postProcessBeforeInitialization()，
+             * 生命周期方法回调顺序：1 如果有@PostConstrcut()注解
              */
             wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
         }
 
         try {
             /**
-             * 初始化方法执行，生命周期方法回调顺序：2先执行实现了InitializaBean的afterProperties()方法，3最后再执行init-method方法
+             * 初始化方法执行，
+             * 生命周期方法回调顺序：2先执行实现了InitializaBean的afterProperties()方法，3最后再执行init-method方法
              */
             invokeInitMethods(beanName, wrappedBean, mbd);
         } catch (Throwable ex) {
@@ -1819,6 +1840,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return wrappedBean;
     }
 
+
+    /**
+     * 这里进行回调aware接口的方法，可以取得一些资源，比如：
+     *  1如果实现了BeanNameAware 那么可以注入beanName；
+     *  2如果实现了BeanClassLoaderAware 那么可以注入BeanClassLoader
+     *  3如果实现了BeanFactoryAware 那么可以注入BeanFactory
+     *  4如果实现了ApplicationContextAware 那么可以注入ApplicationContext
+     * @param beanName
+     * @param bean
+     */
     private void invokeAwareMethods(final String beanName, final Object bean) {
         if (bean instanceof Aware) {
             if (bean instanceof BeanNameAware) {
