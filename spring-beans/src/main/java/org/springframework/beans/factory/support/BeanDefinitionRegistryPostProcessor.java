@@ -23,8 +23,8 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
  * 翻译英文注释可以得出：
  * 1。这个接口属于BeanFactoryPostProcessor的扩展接口
  * 2。重载的postProcessBeanDefinitionRegistry方法会比BeanFactoryPostProcessor的postProcessBeanDefinitionRegistry更先执行
- *
- *
+ * <p>
+ * <p>
  * Extension to the standard {@link BeanFactoryPostProcessor} SPI, allowing for
  * the registration of further bean definitions <i>before</i> regular 更先执行!!!!
  * BeanFactoryPostProcessor detection kicks in. In particular,
