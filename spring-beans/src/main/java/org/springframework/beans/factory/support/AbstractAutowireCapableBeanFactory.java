@@ -1779,7 +1779,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
      * applyBeanPostProcessorsBeforeInitialization：执行@PostConstruct方法
      * initMethod: 这里调用两个方法，先执行实现了InitializaBean的afterProperties()方法；然后自定义的initMethod
      * applyBeanPostProcessorsAfterInitialization:
-     *
+     * <p>
      * Initialize the given bean instance, applying factory callbacks
      * as well as init methods and bean post processors.
      * <p>Called from {@link #createBean} for traditionally defined beans,
@@ -1798,18 +1798,23 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
      * @see #applyBeanPostProcessorsAfterInitialization
      */
     protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
+        /**
+         * 1.回调aware接口方法 比如BeanNameAware，BeanFactoryAware，ApplicationContextAware
+         */
         if (System.getSecurityManager() != null) {
             AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
                 invokeAwareMethods(beanName, bean);
                 return null;
             }, getAccessControlContext());
         } else {
-            /**
-             * 如果bean实现了Aware接口，这里回调aware接口的方法
-             */
+            // 如果bean实现了Aware接口，这里回调aware接口的方法
             invokeAwareMethods(beanName, bean);
         }
 
+        /**
+         * 2.后置处理器的applyBeanPostProcessorsBeforeInitialization方法
+         *  包括@PostConstrcut()注解
+         */
         Object wrappedBean = bean;
         if (mbd == null || !mbd.isSynthetic()) {
             /**
@@ -1819,21 +1824,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
         }
 
+        /**
+         * 3.初始化方法执行，先执行实现了InitializaBean的afterProperties()方法，最后再执行init-method方法
+         */
         try {
-            /**
-             * 初始化方法执行，
-             * 生命周期方法回调顺序：2先执行实现了InitializaBean的afterProperties()方法，3最后再执行init-method方法
-             */
             invokeInitMethods(beanName, wrappedBean, mbd);
         } catch (Throwable ex) {
             throw new BeanCreationException(
                     (mbd != null ? mbd.getResourceDescription() : null),
                     beanName, "Invocation of init method failed", ex);
         }
+        /**
+         * 4.后置处理器执行BeanPostProcessor.postProcessAfterInitialization() aop在此处生成代理对象！！！ 偷梁换柱
+         */
         if (mbd == null || !mbd.isSynthetic()) {
-            /**
-             * 后置处理器执行BeanPostProcessor.postProcessAfterInitialization() aop在此处生成代理对象！！！ 偷梁换柱
-             */
             wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
         }
 
@@ -1843,10 +1847,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     /**
      * 这里进行回调aware接口的方法，可以取得一些资源，比如：
-     *  1如果实现了BeanNameAware 那么可以注入beanName；
-     *  2如果实现了BeanClassLoaderAware 那么可以注入BeanClassLoader
-     *  3如果实现了BeanFactoryAware 那么可以注入BeanFactory
-     *  4如果实现了ApplicationContextAware 那么可以注入ApplicationContext
+     * 1如果实现了BeanNameAware 那么可以注入beanName；
+     * 2如果实现了BeanClassLoaderAware 那么可以注入BeanClassLoader
+     * 3如果实现了BeanFactoryAware 那么可以注入BeanFactory
+     * 4如果实现了ApplicationContextAware 那么可以注入ApplicationContext
+     *
      * @param beanName
      * @param bean
      */
