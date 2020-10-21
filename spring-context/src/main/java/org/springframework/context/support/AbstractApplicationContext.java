@@ -540,7 +540,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
             // Tell the subclass to refresh the internal bean factory.
             /**
              * !!!获得工厂 Tell the subclass to refresh the internal bean factory.
-             *
+             * 目的：因为ApplicationContext是BeanFactory的功能上的扩展，
+             * 那么经过obtainFreshBeanFactory方法的ApplicationContext才有了BeanFactory的全部功能。
              */
             ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -566,6 +567,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
                  * Must be called before singleton instantiation.
                  * ======
                  * 都是使用PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors()
+                 * 主要是调用ConfigurationClassPostProcessor这个后置处理器
                  */
                 invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -707,6 +709,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
     protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
         // Tell the internal bean factory to use the context's class loader etc.
         beanFactory.setBeanClassLoader(getClassLoader());
+        /**
+         * 增加对SPEL表达式的支持 比如 #{xxx}
+         */
         beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
         beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
@@ -768,6 +773,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
      * <p>Must be called before singleton instantiation.
      */
     protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+
+        /**
+         * 这个方法很重要 注册自定义的实现了BeanFactoryProcessor接口的类，比如通过@EnableXXX注解引入的
+         */
         PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
         // Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
