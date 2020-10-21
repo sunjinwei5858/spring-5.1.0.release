@@ -284,10 +284,15 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
             if (this.advisedBeans.containsKey(cacheKey)) {
                 return null;
             }
+
+            boolean infrastructureClass = isInfrastructureClass(beanClass);
+
             /**
-             * 判断是不是基础的bean
+             * shouldSkip该方法会去扫描aop切面类的通知 并进行缓存
+             * 调用的是AspectJAwareAdvisorAutoProxyCreator#shouldSkip(java.lang.Class, java.lang.String)
              */
-            if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
+            boolean shouldSkip = shouldSkip(beanClass, beanName);
+            if (infrastructureClass || shouldSkip) {
                 this.advisedBeans.put(cacheKey, Boolean.FALSE);
                 return null;
             }
@@ -301,7 +306,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
             if (StringUtils.hasLength(beanName)) {
                 this.targetSourcedBeans.add(beanName);
             }
+            /**
+             *
+             */
             Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, targetSource);
+
             Object proxy = createProxy(beanClass, beanName, specificInterceptors, targetSource);
             this.proxyTypes.put(cacheKey, proxy.getClass());
             /**
