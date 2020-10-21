@@ -63,6 +63,8 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 /**
+ * 真正进行将userService studentService @ComponentScan 注解扫描注册到bean定义容器中的类
+ * <p>
  * Parses a {@link Configuration} class definition, populating a collection of
  * {@link ConfigurationClass} objects (parsing a single Configuration class may result in
  * any number of ConfigurationClass objects because one Configuration class may import
@@ -261,7 +263,7 @@ class ConfigurationClassParser {
                 !this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
             for (AnnotationAttributes componentScan : componentScans) {
                 // The config class is annotated with @ComponentScan -> perform the scan immediately
-                /**
+                /** The config class is annotated with @ComponentScan -> perform the scan immediately
                  * 这里进行解析和扫描 @ComponentScan 包下面的bean定义注册，userService的bean定义注册
                  */
                 Set<BeanDefinitionHolder> scannedBeanDefinitions = this.componentScanParser.parse(
