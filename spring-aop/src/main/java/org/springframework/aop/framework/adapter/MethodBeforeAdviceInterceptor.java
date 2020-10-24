@@ -26,7 +26,7 @@ import java.io.Serializable;
 
 /**
  * 前置通知拦截器，真正调用before方法的地方!!!
- *
+ * <p>
  * Interceptor to wrap am {@link org.springframework.aop.MethodBeforeAdvice}.
  * Used internally by the AOP framework; application developers should not need
  * to use this class directly.
@@ -54,7 +54,13 @@ public class MethodBeforeAdviceInterceptor implements MethodInterceptor, BeforeA
 
     @Override
     public Object invoke(MethodInvocation mi) throws Throwable {
+        /**
+         * 执行前置通知方法
+         */
         this.advice.before(mi.getMethod(), mi.getArguments(), mi.getThis());
+        /**
+         * 开始调用目标方法，因为此时currentInterceptorIndex == 4，前置通知的index为4
+         */
         return mi.proceed();
     }
 

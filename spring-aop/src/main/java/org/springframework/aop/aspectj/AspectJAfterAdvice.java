@@ -53,7 +53,7 @@ public class AspectJAfterAdvice extends AbstractAspectJAdvice
     public Object invoke(MethodInvocation mi) throws Throwable {
         try {
             /**
-             *
+             * 本拦截器为后置通知拦截器，执行下一个通知
              */
             return mi.proceed();
         } finally {

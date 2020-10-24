@@ -123,6 +123,9 @@ public class ThrowsAdviceInterceptor implements MethodInterceptor, AfterAdvice {
     @Override
     public Object invoke(MethodInvocation mi) throws Throwable {
         try {
+            /**
+             * 执行下一个拦截器，即调用返回通知
+             */
             return mi.proceed();
         } catch (Throwable ex) {
             Method handlerMethod = getExceptionHandler(ex);

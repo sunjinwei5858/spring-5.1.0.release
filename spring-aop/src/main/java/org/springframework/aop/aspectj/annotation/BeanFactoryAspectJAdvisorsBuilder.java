@@ -47,7 +47,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
     private volatile List<String> aspectBeanNames;
 
     /**
-     *
+     * 缓存切面类四个通知，key为切面类的名称，value为切面类配置的通知集合
      */
     private final Map<String, List<Advisor>> advisorsCache = new ConcurrentHashMap<>();
 
@@ -86,38 +86,79 @@ public class BeanFactoryAspectJAdvisorsBuilder {
      * @see #isEligibleBean
      */
     public List<Advisor> buildAspectJAdvisors() {
+
         List<String> aspectNames = this.aspectBeanNames;
 
+        /**
+         * 如果缓存中没有，那么就去解析切面
+         */
         if (aspectNames == null) {
+            /**
+             * 做了dcl检查 双重判断
+             */
             synchronized (this) {
                 aspectNames = this.aspectBeanNames;
                 if (aspectNames == null) {
+                    /**
+                     * 用于保存所有解析出来的Advisor集合对象
+                     */
                     List<Advisor> advisors = new ArrayList<>();
+                    /**
+                     * 用于保存所有切面名称的集合
+                     */
                     aspectNames = new ArrayList<>();
+                    /**
+                     * aop功能在这里传入的是Object.class!!!!，代表去容器中获取所有组件的名称，然后再经过一一遍历。
+                     * 这个过程是十分耗性能的，所以说spring在这里加入了保存切面信息的缓存。
+                     *
+                     * 但是事务功能不一样，事务传的是Advisor.class，选择范围小，不消耗性能。
+                     * 所以事务功能spring没有加入缓存来保存事务相关的Advisor
+                     */
                     String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
                             this.beanFactory, Object.class, true, false);
+                    /**
+                     * 遍历我们从容器中获取到的beanNames
+                     */
                     for (String beanName : beanNames) {
                         if (!isEligibleBean(beanName)) {
                             continue;
                         }
                         // We must be careful not to instantiate beans eagerly as in this case they
                         // would be cached by the Spring container but would not have been weaved.
+                        /**
+                         * 通过beanName从容器中获取到Class对象 beanType: sunjinwei.service.MyAspect
+                         */
                         Class<?> beanType = this.beanFactory.getType(beanName);
                         if (beanType == null) {
                             continue;
                         }
                         /**
-                         * !!!根据class对象判断是不是切面
+                         * !!!根据class对象判断是不是切面 是否加了@Aspect注解
                          */
                         if (this.advisorFactory.isAspect(beanType)) {
                             /**
                              * 如果是 加入到缓存中
+                             * 高级面试题：为什么要将切面加入缓存，因为获取beanNames，传入的是Object 会将容器的object都获取出来，然后挨个遍历
+                             * 这是十分耗性能的
                              */
                             aspectNames.add(beanName);
+                            /**
+                             * 将切面类的class和beanName封装成AspectMetadata对象
+                             */
                             AspectMetadata amd = new AspectMetadata(beanType, beanName);
                             if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
-                                MetadataAwareAspectInstanceFactory factory = new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+                                /**
+                                 * 构建切面注解的实例工厂
+                                 */
+                                MetadataAwareAspectInstanceFactory factory =
+                                        new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+                                /**
+                                 * 根据工厂将四个通知都获取到
+                                 */
                                 List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
+                                /**
+                                 * 加入到缓存中
+                                 */
                                 if (this.beanFactory.isSingleton(beanName)) {
                                     this.advisorsCache.put(beanName, classAdvisors);
                                 } else {

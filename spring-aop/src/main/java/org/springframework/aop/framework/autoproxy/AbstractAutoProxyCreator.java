@@ -45,7 +45,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 该英文注释已经说明了aop代理对象是在此处实现的
+ * 该英文注释已经说明了aop代理对象是在此处实现的，aop的逻辑分析也是在这个类开始，因为该类在bean的实例化前后实现before和after的后置处理器
+ * before方法：进行aop的解析和缓存，为什么要缓存 因为解析的工作量很大，提高性能
+ * after方法：生成代理对象
  * <p>
  * <p>
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
@@ -138,6 +140,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
     private final Set<String> targetSourcedBeans = Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
+    /**
+     *
+     */
     private final Set<Object> earlyProxyReferences = Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
     private final Map<Object, Class<?>> proxyTypes = new ConcurrentHashMap<>(16);
@@ -251,6 +256,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     @Override
     public Object getEarlyBeanReference(Object bean, String beanName) {
         Object cacheKey = getCacheKey(bean.getClass(), beanName);
+        /**
+         * 如果这里没有缓存上，那么进行缓存
+         */
         if (!this.earlyProxyReferences.contains(cacheKey)) {
             this.earlyProxyReferences.add(cacheKey);
         }
@@ -261,6 +269,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     }
 
     /**
+     * 第一阶段 实例化前：
+     * postProcessBeforeInstantiation --- Instantiation 实例化前进行的逻辑：
      * 入参是Class<?> beanClass
      * <p>
      * 在我们还没创建bean的流程中 还没调用构造器来实例化bean的时候进行调用（实例化前后）
@@ -284,11 +294,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
             if (this.advisedBeans.containsKey(cacheKey)) {
                 return null;
             }
-
+            // 是不是基础的bean
             boolean infrastructureClass = isInfrastructureClass(beanClass);
 
             /**
-             * shouldSkip该方法会去扫描aop切面类的通知 并进行缓存
+             * shouldSkip该方法会去扫描aop切面类的通知 并进行缓存！！！！
              * 调用的是AspectJAwareAdvisorAutoProxyCreator#shouldSkip(java.lang.Class, java.lang.String)
              */
             boolean shouldSkip = shouldSkip(beanClass, beanName);
@@ -338,6 +348,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     }
 
     /**
+     * 第三阶段 初始化后
+     * postProcessAfterInitialization--Initialization--初始化后【第三阶段】进行生成代理
+     *
+     * <p>
      * Create a proxy with the configured interceptors if the bean is
      * identified as one to proxy by the subclass.
      *
@@ -347,6 +361,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
         if (bean != null) {
             Object cacheKey = getCacheKey(bean.getClass(), beanName);
+            /**
+             * 如果earlyProxyReferences不包含cacheKey
+             */
             if (!this.earlyProxyReferences.contains(cacheKey)) {
                 /**
                  * 找到合适的 就会生成代理
@@ -419,6 +436,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
         Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
         if (specificInterceptors != DO_NOT_PROXY) {
             this.advisedBeans.put(cacheKey, Boolean.TRUE);
+            // 创建代理
             Object proxy = createProxy(
                     bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
             this.proxyTypes.put(cacheKey, proxy.getClass());

@@ -62,7 +62,13 @@ public class AfterReturningAdviceInterceptor implements MethodInterceptor, After
      */
     @Override
     public Object invoke(MethodInvocation mi) throws Throwable {
+        /**
+         * 返回通知拦截器，所抛出异常不会执行返回通知的方法，执行下一个拦截器【后置通知拦截器对象】
+         */
         Object retVal = mi.proceed();
+        /**
+         * 执行返回通知的方法
+         */
         this.advice.afterReturning(retVal, mi.getMethod(), mi.getArguments(), mi.getThis());
         return retVal;
     }
