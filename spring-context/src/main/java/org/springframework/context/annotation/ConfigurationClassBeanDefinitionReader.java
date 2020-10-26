@@ -135,7 +135,8 @@ class ConfigurationClassBeanDefinitionReader {
          * 执行AspectJAutoProxyRegistrar的registerBeanDefinitions()方法
          * 将aop代理的后置处理器AnnotationAwareAspectJAutoProxyCreator注册到容器
          */
-        loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
+        Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> importBeanDefinitionRegistrars = configClass.getImportBeanDefinitionRegistrars();
+        loadBeanDefinitionsFromRegistrars(importBeanDefinitionRegistrars);
     }
 
     /**
@@ -351,6 +352,7 @@ class ConfigurationClassBeanDefinitionReader {
 
     /**
      * 进行遍历 将后置处理器注册到bean定义容器中
+     *
      * @param registrars
      */
     private void loadBeanDefinitionsFromRegistrars(Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> registrars) {

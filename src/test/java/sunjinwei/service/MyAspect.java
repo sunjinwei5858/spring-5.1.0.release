@@ -10,7 +10,7 @@ import java.util.Arrays;
 @Aspect
 public class MyAspect {
 
-    @Pointcut("execution(* sunjinwei.service.UserService.test())")
+    @Pointcut("execution(* sunjinwei.service.StudentService.getName())")
     public void myPointcut() {
     }
 

@@ -319,7 +319,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
              * 这里parse做了很多事情：
              * 1.扫描
              * 1。将userService注册到bean定义map中
-             * 2。将@EnableXXX 注解中@Import中的封装到Con
+             * 2。将@EnableXXX 注解中@Import中的封装到ConfigutationClass
              */
             parser.parse(candidates);
             parser.validate();

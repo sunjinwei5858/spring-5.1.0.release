@@ -4,7 +4,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @ComponentScan("sunjinwei.service")
-@EnableAspectJAutoProxy
+@EnableAspectJAutoProxy()
+
 public class MainConfig {
 
 

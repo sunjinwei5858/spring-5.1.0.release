@@ -283,7 +283,12 @@ class ConfigurationClassParser {
         }
 
         // Process any @Import annotations
-        processImports(configClass, sourceClass, getImports(sourceClass), true);
+        /**
+         * 处理@Import注解 将@Import导入的类缓存到ConfigurationClass的importBeanDefinitionRegistrars容器中
+         * 便于ConfigurationClassPostProcessor后置处理器调用，统一进行注册包扫描和配置类即所有类的bean定义
+         */
+        Set<SourceClass> imports = getImports(sourceClass);
+        processImports(configClass, sourceClass, imports, true);
 
         // Process any @ImportResource annotations
         AnnotationAttributes importResource =
@@ -486,11 +491,16 @@ class ConfigurationClassParser {
     private Set<SourceClass> getImports(SourceClass sourceClass) throws IOException {
         Set<SourceClass> imports = new LinkedHashSet<>();
         Set<SourceClass> visited = new LinkedHashSet<>();
+        /**
+         * 这里进行add
+         */
         collectImports(sourceClass, imports, visited);
         return imports;
     }
 
     /**
+     * 这里进行将@Import注解导入进来的类获取
+     * <p>
      * Recursively collect all declared {@code @Import} values. Unlike most
      * meta-annotations it is valid to have several {@code @Import}s declared with
      * different values; the usual process of returning values from the first
@@ -514,6 +524,9 @@ class ConfigurationClassParser {
                     collectImports(annotation, imports, visited);
                 }
             }
+            /**
+             * 这里将@Import的value 添加
+             */
             imports.addAll(sourceClass.getAnnotationAttributes(Import.class.getName(), "value"));
         }
     }
@@ -581,24 +594,31 @@ class ConfigurationClassParser {
                         // Candidate class is an ImportSelector -> delegate to it to determine imports
                         Class<?> candidateClass = candidate.loadClass();
                         ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
-                        ParserStrategyUtils.invokeAwareMethods(
-                                selector, this.environment, this.resourceLoader, this.registry);
+
+                        ParserStrategyUtils.invokeAwareMethods(selector, this.environment, this.resourceLoader, this.registry);
+
                         if (this.deferredImportSelectors != null && selector instanceof DeferredImportSelector) {
-                            this.deferredImportSelectors.add(
-                                    new DeferredImportSelectorHolder(configClass, (DeferredImportSelector) selector));
+                            this.deferredImportSelectors.add(new DeferredImportSelectorHolder(configClass, (DeferredImportSelector) selector));
                         } else {
                             String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
                             Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
                             processImports(configClass, currentSourceClass, importSourceClasses, false);
                         }
-                    } else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
+                    }
+                    /**
+                     * 如果属于ImportBeanDefinitionRegistrar，会将这个类加入到
+                     * 自己发现的两处应用：
+                     * 1。aop的@EnableAspectJAutoProxy 就导入了@Import(AspectJAutoProxyRegistrar.class)，其中AspectJAutoProxyRegistrar实现了ImportBeanDefinitionRegistrar
+                     * 2。mybatis-spring 的@MapperScan注解也是@Import(MapperScannerRegistrar.class)，其中MapperScannerRegistrar实现了ImportBeanDefinitionRegistrar
+                     */
+                    else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
                         // Candidate class is an ImportBeanDefinitionRegistrar ->
                         // delegate to it to register additional bean definitions
                         Class<?> candidateClass = candidate.loadClass();
-                        ImportBeanDefinitionRegistrar registrar =
-                                BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
-                        ParserStrategyUtils.invokeAwareMethods(
-                                registrar, this.environment, this.resourceLoader, this.registry);
+
+                        ImportBeanDefinitionRegistrar registrar = BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
+                        ParserStrategyUtils.invokeAwareMethods(registrar, this.environment, this.resourceLoader, this.registry);
+
                         configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
                     } else {
                         // Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->

@@ -1,7 +1,5 @@
 package sunjinwei.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -9,16 +7,24 @@ import javax.annotation.PostConstruct;
 @Component
 public class StudentService {
 
-    @Autowired
+   /* @Autowired
     private ApplicationContext applicationContext;
+*/
 
-
-    @Autowired
-    private UserService userService;
+   /* @Autowired
+    private UserService userService;*/
 
     private String name;
 
+    /**
+     * 如果getName被代理了，如果 @EnableAspectJAutoProxy(exposeProxy = true)
+     * exposeProxy为true，那么
+     * @return
+     */
     public String getName() {
+
+        System.out.println(6/0);
+
         return name;
     }
 
