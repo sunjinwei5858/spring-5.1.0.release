@@ -608,6 +608,7 @@ class ConfigurationClassParser {
                     /**
                      * 如果属于ImportBeanDefinitionRegistrar，会将这个类加入到
                      * 自己发现的两处应用：
+                     *
                      * 1。aop的@EnableAspectJAutoProxy 就导入了@Import(AspectJAutoProxyRegistrar.class)，其中AspectJAutoProxyRegistrar实现了ImportBeanDefinitionRegistrar
                      * 2。mybatis-spring 的@MapperScan注解也是@Import(MapperScannerRegistrar.class)，其中MapperScannerRegistrar实现了ImportBeanDefinitionRegistrar
                      */
