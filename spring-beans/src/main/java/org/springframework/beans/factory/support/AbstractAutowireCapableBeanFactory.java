@@ -577,7 +577,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                         "' to allow for resolving potential circular references");
             }
             /**
-             * 将早期对象【已经构造化但是还没属性注入】添加到三级缓存中！！！
+             * 将早期对象【已经构造化但是还没属性注入】添加到三级缓存中！！！即singltonFactories中去
              */
             //addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 
@@ -1090,12 +1090,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 Class<?> targetType = determineTargetType(beanName, mbd);
                 if (targetType != null) {
                     /**
-                     * 调用applyBeanPostProcessorsBeforeInstantiation 前置处理
+                     * 调用applyBeanPostProcessorsBeforeInstantiation 前置处理 实例化前进行的逻辑 aop的解析和缓存
                      */
                     bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
                     if (bean != null) {
                         /**
-                         * 后置处理!!!
+                         * 后置处理!!! 如果需要aop代理 那么会在此处进行生成aop代理对象，进行偷梁换柱!!! 目前自己看到的情况好多后置处理器还没 所以可以理解这里是给子类扩展的
                          */
                         bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
                     }
