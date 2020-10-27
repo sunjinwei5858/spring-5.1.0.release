@@ -22,6 +22,9 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 /**
+ * 这个类用来创建父容器和子容器，但是父子容器还没进行关联，那么在哪里进行关联呢？
+ * <p>
+ * <p>
  * {@link org.springframework.web.WebApplicationInitializer WebApplicationInitializer}
  * to register a {@code DispatcherServlet} and use Java-based Spring configuration.
  *
@@ -41,60 +44,67 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
  * @author Chris Beams
  * @since 3.2
  */
-public abstract class AbstractAnnotationConfigDispatcherServletInitializer
-		extends AbstractDispatcherServletInitializer {
+public abstract class AbstractAnnotationConfigDispatcherServletInitializer extends AbstractDispatcherServletInitializer {
 
-	/**
-	 * {@inheritDoc}
-	 * <p>This implementation creates an {@link AnnotationConfigWebApplicationContext},
-	 * providing it the annotated classes returned by {@link #getRootConfigClasses()}.
-	 * Returns {@code null} if {@link #getRootConfigClasses()} returns {@code null}.
-	 */
-	@Override
-	@Nullable
-	protected WebApplicationContext createRootApplicationContext() {
-		Class<?>[] configClasses = getRootConfigClasses();
-		if (!ObjectUtils.isEmpty(configClasses)) {
-			AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-			context.register(configClasses);
-			return context;
-		}
-		else {
-			return null;
-		}
-	}
+    /**
+     * 创建父容器AnnotationConfigWebApplicationContext
+     * <p>
+     * {@inheritDoc}
+     * <p>This implementation creates an {@link AnnotationConfigWebApplicationContext},
+     * providing it the annotated classes returned by {@link #getRootConfigClasses()}.
+     * Returns {@code null} if {@link #getRootConfigClasses()} returns {@code null}.
+     */
+    @Override
+    @Nullable
+    protected WebApplicationContext createRootApplicationContext() {
+        // 获取关于父容器的配置
+        Class<?>[] configClasses = getRootConfigClasses();
+        if (!ObjectUtils.isEmpty(configClasses)) {
+            // 父容器
+            AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+            context.register(configClasses);
+            return context;
+        } else {
+            return null;
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 * <p>This implementation creates an {@link AnnotationConfigWebApplicationContext},
-	 * providing it the annotated classes returned by {@link #getServletConfigClasses()}.
-	 */
-	@Override
-	protected WebApplicationContext createServletApplicationContext() {
-		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-		Class<?>[] configClasses = getServletConfigClasses();
-		if (!ObjectUtils.isEmpty(configClasses)) {
-			context.register(configClasses);
-		}
-		return context;
-	}
+    /**
+     * 创建子容器AnnotationConfigWebApplicationContext，父子的容器都是同一个类型
+     * {@inheritDoc}
+     * <p>This implementation creates an {@link AnnotationConfigWebApplicationContext},
+     * providing it the annotated classes returned by {@link #getServletConfigClasses()}.
+     */
+    @Override
+    protected WebApplicationContext createServletApplicationContext() {
+        // 子容器
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        // 获取关于子容器配置
+        Class<?>[] configClasses = getServletConfigClasses();
+        if (!ObjectUtils.isEmpty(configClasses)) {
+            context.register(configClasses);
+        }
+        return context;
+    }
 
-	/**
-	 * Specify {@code @Configuration} and/or {@code @Component} classes for the
-	 * {@linkplain #createRootApplicationContext() root application context}.
-	 * @return the configuration for the root application context, or {@code null}
-	 * if creation and registration of a root context is not desired
-	 */
-	@Nullable
-	protected abstract Class<?>[] getRootConfigClasses();
+    /**
+     * Specify {@code @Configuration} and/or {@code @Component} classes for the
+     * {@linkplain #createRootApplicationContext() root application context}.
+     *
+     * @return the configuration for the root application context, or {@code null}
+     * if creation and registration of a root context is not desired
+     */
+    @Nullable
+    protected abstract Class<?>[] getRootConfigClasses();
 
-	/**
-	 * Specify {@code @Configuration} and/or {@code @Component} classes for the
-	 * {@linkplain #createServletApplicationContext() Servlet application context}.
-	 * @return the configuration for the Servlet application context, or
-	 * {@code null} if all configuration is specified through root config classes.
-	 */
-	@Nullable
-	protected abstract Class<?>[] getServletConfigClasses();
+    /**
+     * Specify {@code @Configuration} and/or {@code @Component} classes for the
+     * {@linkplain #createServletApplicationContext() Servlet application context}.
+     *
+     * @return the configuration for the Servlet application context, or
+     * {@code null} if all configuration is specified through root config classes.
+     */
+    @Nullable
+    protected abstract Class<?>[] getServletConfigClasses();
 
 }
