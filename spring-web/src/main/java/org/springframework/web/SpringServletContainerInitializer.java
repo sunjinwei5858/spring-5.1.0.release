@@ -35,8 +35,9 @@ import java.util.Set;
  * configuration of the servlet container using Spring's {@link WebApplicationInitializer}
  * SPI as opposed to (or possibly in combination with) the traditional
  * {@code web.xml}-based approach.
- *
+ * <p>
  * SPI机制：
+ *
  * <h2>Mechanism of Operation</h2>
  * This class will be loaded and instantiated and have its {@link #onStartup}
  * method invoked by any Servlet 3.0-compliant container during container startup assuming
@@ -115,6 +116,11 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
     /**
      * Delegate the {@code ServletContext} to any {@link WebApplicationInitializer}
      * implementations present on the application classpath.
+     * <p>
+     * 因为这个类@HandlesTypes注解的是WebApplicationInitializer.class，
+     * Servlet3.0容器会自动的扫描classpath下面WebApplicationInitializer接口的实现类，
+     * 并提供给SpringServletContainerInitializer的onStartup()方法
+     *
      * <p>Because this class declares @{@code HandlesTypes(WebApplicationInitializer.class)},
      * Servlet 3.0+ containers will automatically scan the classpath for implementations
      * of Spring's {@code WebApplicationInitializer} interface and provide the set of all
@@ -135,7 +141,7 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
      *
      * @param webAppInitializerClasses all implementations of
      *                                 {@link WebApplicationInitializer} found on the application classpath
-     * @param servletContext           the servlet context to be initialized
+     * @param servletContext           the servlet context to be initialized servletContext是tomcat给过来的，现在交给了所有的WebApplicationInitializer.class实现类
      * @see WebApplicationInitializer#onStartup(ServletContext)
      * @see AnnotationAwareOrderComparator
      */
@@ -152,8 +158,15 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
                 if (!waiClass.isInterface() && !Modifier.isAbstract(waiClass.getModifiers()) &&
                         WebApplicationInitializer.class.isAssignableFrom(waiClass)) {
                     try {
-                        initializers.add((WebApplicationInitializer)
-                                ReflectionUtils.accessibleConstructor(waiClass).newInstance());
+                        /**
+                         * 反射创建WebApplicationInitializer接口的实现类
+                         */
+                        WebApplicationInitializer newInstance = (WebApplicationInitializer) ReflectionUtils.accessibleConstructor(waiClass).newInstance();
+
+                        /**
+                         * 添加实现类到集合
+                         */
+                        initializers.add(newInstance);
                     } catch (Throwable ex) {
                         throw new ServletException("Failed to instantiate WebApplicationInitializer class", ex);
                     }
@@ -167,7 +180,14 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
         }
 
         servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
+        /**
+         * 对实现类进行排序
+         */
         AnnotationAwareOrderComparator.sort(initializers);
+
+        /**
+         * 遍历实现类集合，并调用实现类的onStartup方法，这里可以进行注册三大组件 filter listener dispatchservlet
+         */
         for (WebApplicationInitializer initializer : initializers) {
             initializer.onStartup(servletContext);
         }
