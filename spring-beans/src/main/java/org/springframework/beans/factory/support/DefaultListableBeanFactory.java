@@ -40,6 +40,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
+ * DefaultListableBeanFactory工厂的作用：注册bean定义
+ * 1。存储bean定义信息容器的工厂
+ * 2。存储bean定义name容器的工厂
+ *
+ *
+ * <p>
  * Spring's default implementation of the {@link ConfigurableListableBeanFactory}
  * and {@link BeanDefinitionRegistry} interfaces: a full-fledged bean factory
  * based on bean definition metadata, extensible through post-processors.
@@ -93,8 +99,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     /**
      * Map from serialized id to factory instance.
      */
-    private static final Map<String, Reference<DefaultListableBeanFactory>> serializableFactories =
-            new ConcurrentHashMap<>(8);
+    private static final Map<String, Reference<DefaultListableBeanFactory>> serializableFactories = new ConcurrentHashMap<>(8);
 
     /**
      * Optional id for this factory, for serialization purposes.
@@ -129,7 +134,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     private final Map<Class<?>, Object> resolvableDependencies = new ConcurrentHashMap<>(16);
 
     /**
-     * bean定义map容器
+     * 真正存储bean定义的map容器
      * Map of bean definition objects, keyed by bean name.
      */
     private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(256);
