@@ -463,7 +463,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
      * 创建事务对象TransactionInfo的逻辑：
      * 1。使用DelegatingTransactionAttribute设置TransactionAttribute属性，实际类型是RuleBasedTransactionAttribute，装饰者模式
      * 2.获取事务
-     * 3。
+     * 3。构建事务对象，将事务所有的信息都封装在一个对象里面
      * <p>
      * Create a transaction if necessary based on the given TransactionAttribute.
      * <p>Allows callers to perform custom TransactionAttribute lookups through
@@ -493,7 +493,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
                 }
             };
         }
-        // 2 获取事务 事务处理当然是以事务为核心 那么获取事务就是最重要的事情
+        // 2 获取事务 事务处理当然是以事务为核心 那么获取事务就是最重要的事情 AbstractPlatformTransactionManager
         TransactionStatus status = null;
         if (txAttr != null) {
             if (tm != null) {
@@ -505,12 +505,13 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
                 }
             }
         }
-        // 3 构建事务信息
+        // 3 准备事务信息 spring将所有的事务信息都封装在TransactionInfo对象中 这个对象包含了目标方法开始前的所有状态信息
+        // 一旦事务执行失败，spring通过TransactionInfo对象中的信息来进行回滚后续工作
         return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
     }
 
     /**
-     * 构建事务信息
+     * 构建事务信息，使用TransactionInfo对象进行封装
      * Prepare a TransactionInfo for the given attribute and status object.
      *
      * @param txAttr                  the TransactionAttribute (may be {@code null})
