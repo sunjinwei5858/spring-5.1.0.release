@@ -220,6 +220,17 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
     /**
      * 代码量上就能看出来 bean 的加载经历了 一个相当复杂的过程!!!
+     * 这里其实分好几种情况，大类分为两种：
+     * <p>
+     * 第一类分为两种：从缓存中获取到了：1单例缓存池 ；2循环依赖时B set属性A时，从三级缓存中获取到A的早期对象
+     * 第一种：已经实例化放在单例缓存池了，直接获取到，然后判断是不是FactoryBean即调用getObjectForBeanInstance方法
+     * 第二种：循环依赖的情况，先A后B，B进行set属性A时候，从三级缓存中获取到了A的早期对象，最后调用判断是不是FactoryBean即调用getObjectForBeanInstance方法
+     * <p>
+     * 第二类：分为两种：正常的是第一次加载，1单例 ；2原型 ； 3非单例也非原型
+     * 第一种单例：最后都会调用getObjectForBeanInstance方法
+     * 第二种原型：最后都会调用getObjectForBeanInstance方法
+     * 第三种非单例也非原型：最后都会调用getObjectForBeanInstance方法
+     *
      * <p>
      * Return an instance, which may be shared or independent, of the specified bean.
      *
@@ -370,6 +381,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                             throw ex;
                         }
                     });
+                    /**
+                     * 并不是直接返回实例本身而是返回指定方法返回的实例：
+                     * 如果是FactoryBean 那么调用getObject()返回真正的bean
+                     */
                     bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
                 } else if (mbd.isPrototype()) {
                     /**
@@ -383,6 +398,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                     } finally {
                         afterPrototypeCreation(beanName);
                     }
+                    /**
+                     * 原型模式也会进行判断：是不是FactoryBean,并不是直接返回实例本身而是返回指定方法返回的实例：
+                     */
                     bean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);
                 } else {
                     String scopeName = mbd.getScope();
@@ -399,6 +417,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                                 afterPrototypeCreation(beanName);
                             }
                         });
+                        /**
+                         * 其他作用域的模式：getObjectForBeanInstance方法的处理
+                         */
                         bean = getObjectForBeanInstance(scopedInstance, name, beanName, mbd);
                     } catch (IllegalStateException ex) {
                         throw new BeanCreationException(beanName,
