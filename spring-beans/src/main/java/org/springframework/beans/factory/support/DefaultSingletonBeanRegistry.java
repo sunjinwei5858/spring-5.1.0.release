@@ -184,7 +184,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
     }
 
     /**
-     * 缓存中获取单例bean
+     * 从缓存中获取单例bean：getSingleton方法有很多重载，这里调用了重载方法getSingleton(beanName, true)，是为了解决循环依赖
      *
      * @param beanName the name of the bean to look for
      * @return 返回的可能是一个单例对象，也可能是一个早期对象 解决循环依赖
@@ -213,7 +213,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
      * @return the registered singleton object, or {@code null} if none found
      */
     @Nullable
-    protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+    protected Object getSingleton(String beanName, boolean allowEarlyReference) { // allowEarlyReference spring框架默认为true 支持循环依赖
 
         /**
          * 一级缓存获取 singletonObjects
@@ -229,6 +229,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
                  * 二级缓存获取 earlySingletonObjects
                  */
                 singletonObject = this.earlySingletonObjects.get(beanName);
+                /**
+                 * allowEarlyReference：spring框架默认为true 支持循环依赖.那么就可以从三级缓存中获取早期对象
+                 */
                 if (singletonObject == null && allowEarlyReference) {
                     /**
                      * 三级缓存获取 singletonFactories
