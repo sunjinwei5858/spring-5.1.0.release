@@ -212,6 +212,11 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
     private boolean enforceDestroyMethod = true;
 
+    /**
+     * 默认synthetic属性为false
+     * AbstractAutowireCapableBeanFactory#getEarlyBeanReference(String, RootBeanDefinition, Object)
+     * 这里判断 !mbd.isSynthetic() --> 返回true
+     */
     private boolean synthetic = false;
 
     private int role = BeanDefinition.ROLE_APPLICATION;
