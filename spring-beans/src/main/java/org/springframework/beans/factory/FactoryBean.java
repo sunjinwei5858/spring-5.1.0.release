@@ -22,7 +22,7 @@ import org.springframework.lang.Nullable;
  * 一般情况下，spring通过反射机制利用bean的class属性指定实现类来实例化bean。
  * 在某些情况下bean的实例化过程比较复杂，如果按照传统方式，则需要在<bean>中提供大量的配置信息，配置方式的灵活性受限。
  * 这时采用编码的方式可能会得到一个简单的方案。
- * spring为此提供了一个FactoryBean的工厂类接口，用户可以通过该接口定制实例化bean的逻辑。
+ * spring为此提供了一个FactoryBean的工厂类接口，用户可以通过该接口【定制实例化】bean的逻辑。
  *
  * 当配置文件中class属性配置的实现类是FactoryBean时，通过getBean()方法返回的不是FactoryBean本身，而是FactoryBean#getObejct()方法所返回的对象，
  * 相当于FactoryBean#getObejct()代理了getBean()方法。
@@ -37,7 +37,7 @@ import org.springframework.lang.Nullable;
  * A FactoryBean is defined in a bean style, but the object exposed for bean
  * references ({@link #getObject()}) is always the object that it creates.
  *
- * <p>FactoryBeans can support singletons and prototypes, and can either create
+ * <p>FactoryBeans can support singletons and prototypes, and can either create    【支持单例和原型】
  * objects lazily on demand or eagerly on startup. The {@link SmartFactoryBean}
  * interface allows for exposing more fine-grained behavioral metadata.
  *

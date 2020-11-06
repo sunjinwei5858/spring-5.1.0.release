@@ -40,6 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanRegistry {
 
     /**
+     * 缓存FactoryBean对象的容器!!!!
+     *
      * Cache of singleton objects created by FactoryBeans: FactoryBean name to object.
      */
     private final Map<String, Object> factoryBeanObjectCache = new ConcurrentHashMap<>(16);
@@ -83,6 +85,8 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
     }
 
     /**
+     *
+     *
      * Obtain an object to expose from the given FactoryBean.
      *
      * @param factory           the FactoryBean instance
@@ -93,13 +97,23 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
      * @see org.springframework.beans.factory.FactoryBean#getObject()
      */
     protected Object getObjectFromFactoryBean(FactoryBean<?> factory, String beanName, boolean shouldPostProcess) {
+        /**
+         * 单例缓存池中有这个key：
+         * factoryBeanObjectCache容器中有：直接return
+         * factoryBeanObjectCache容器没有：doGetObjectFromFactoryBean+postProcessObjectFromFactoryBean+factoryBeanObjectCache.put
+         */
         if (factory.isSingleton() && containsSingleton(beanName)) {
             synchronized (getSingletonMutex()) {
+                // 第二次判断factoryBeanObjectCache容器有没有
                 Object object = this.factoryBeanObjectCache.get(beanName);
                 if (object == null) {
+                    /**
+                     * doGetObjectFromFactoryBean
+                     */
                     object = doGetObjectFromFactoryBean(factory, beanName);
                     // Only post-process and store if not put there already during getObject() call above
                     // (e.g. because of circular reference processing triggered by custom getBean calls)
+                    // 第三次判断factoryBeanObjectCache容器有没有
                     Object alreadyThere = this.factoryBeanObjectCache.get(beanName);
                     if (alreadyThere != null) {
                         object = alreadyThere;
@@ -112,7 +126,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
                             beforeSingletonCreation(beanName);
                             try {
                                 /**
-                                 * !!!!调用后置处理器
+                                 * !!!!调用后置处理器 子类AbstractAutowireCapableBeanFactory#postProcessObjectFromFactoryBean()实现
                                  */
                                 object = postProcessObjectFromFactoryBean(object, beanName);
                             } catch (Throwable ex) {
@@ -130,11 +144,15 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
                 return object;
             }
         } else {
+            /**
+             * 单例缓存池中没有有这个key：
+             * doGetObjectFromFactoryBean+postProcessObjectFromFactoryBean
+             */
             Object object = doGetObjectFromFactoryBean(factory, beanName);
             if (shouldPostProcess) {
                 try {
                     /**
-                     * !!!调用后置处理器
+                     * !!!调用后置处理器 子类AbstractAutowireCapableBeanFactory#postProcessObjectFromFactoryBean()实现
                      */
                     object = postProcessObjectFromFactoryBean(object, beanName);
                 } catch (Throwable ex) {
@@ -146,6 +164,8 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
     }
 
     /**
+     * doGetObjectFromFactoryBean：真正执行FactoryBean的getObject方法!!!!!
+     *
      * Obtain an object to expose from the given FactoryBean.
      *
      * @param factory  the FactoryBean instance
@@ -168,7 +188,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
                 }
             } else {
                 /**
-                 * !!!!!!
+                 * !!!!!!，之前的版本：后置处理器方法的调用放在这里，现在的5.1.0版本 后置处理器的方法放在了getObjectFromFactoryBean方法中
                  */
                 object = factory.getObject();
             }

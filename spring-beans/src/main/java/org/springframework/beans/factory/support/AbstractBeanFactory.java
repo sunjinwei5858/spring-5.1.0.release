@@ -1702,10 +1702,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
         Object object = null;
         if (mbd == null) {
             /**
-             * 尝试从缓存中加载bean
+             * 第一次尝试从缓存中加载bean，从factoryBeanObjectCache这个容器找，这个操作会判断好多次
+             * 调用父类FactoryBeanRegistrySupport的getCachedObjectForFactoryBean方法
              */
             object = getCachedObjectForFactoryBean(beanName);
         }
+        /**
+         * factoryBeanObjectCache缓存中没有
+         */
         if (object == null) {
             // Return bean instance from factory.
             FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
@@ -1713,11 +1717,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
             if (mbd == null && containsBeanDefinition(beanName)) {
                 mbd = getMergedLocalBeanDefinition(beanName);
             }
-            boolean synthetic = (mbd != null && mbd.isSynthetic());
+            boolean synthetic = (mbd != null && mbd.isSynthetic()); // 这里应该返回的是false
             /**
-             * 注意和getObjectForBeanInstance区别 长得很像
+             * 注意和getObjectForBeanInstance区别 长得很像.
+             * 获取FactoryBean真正核心的方法：调用父类FactoryBeanRegistrySupport的getObjectFromFactoryBean方法【加入了后置处理器进行扩展】
              */
-            object = getObjectFromFactoryBean(factory, beanName, !synthetic);
+            object = getObjectFromFactoryBean(factory, beanName, !synthetic); // !synthetic --> true
         }
         return object;
     }
