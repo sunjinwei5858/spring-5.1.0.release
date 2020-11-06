@@ -1659,6 +1659,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
     }
 
     /**
+     * 这里传的是name，而不是beanName【beanName是去除了&和别名的】，所以BeanFactoryUtils.isFactoryDereference(name)这个方法进行判断
+     *
+     *
      * Get the object for the given bean instance, either the bean
      * instance itself or its created object in case of a FactoryBean.
      *
