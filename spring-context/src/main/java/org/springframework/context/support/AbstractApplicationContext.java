@@ -54,6 +54,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * ApplicationContext包含 BeanFactory的所有功能，属于容器的一种扩展.
+ *
  * Abstract implementation of the {@link org.springframework.context.ApplicationContext}
  * interface. Doesn't mandate the type of storage used for configuration; simply
  * implements common context functionality. Uses the Template Method design pattern,
@@ -531,10 +533,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
         return this.applicationListeners;
     }
 
+
+    /**
+     * ApplicationContext和BeanFactory两者都是用于加载Bean的，但是相比之下，Application­Context提供了更多的扩展功能。
+     *
+     * @throws BeansException
+     * @throws IllegalStateException
+     */
     @Override
     public void refresh() throws BeansException, IllegalStateException {
         synchronized (this.startupShutdownMonitor) {
             // Prepare this context for refreshing.
+            /**
+             * 环境准备
+             */
             prepareRefresh();
 
             // Tell the subclass to refresh the internal bean factory.
@@ -562,7 +574,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
                 // Invoke factory processors registered as beans in the context.
                 /**
-                 * !!!! 实例化BeanFactoryPostProcessors
+                 * !!!! 实例化BeanFactoryPostProcessor后置处理器并且回调方法，
+                 * 点进方法可以看出：BeanDefinitionRegistryPostProcessor比BeanFactoryPostProcessor接口的处理时机更早
+                 *
                  * BeanFactoryPostProcessor Instantiate and invoke all registered BeanFactoryPostProcessor beans,
                  * Must be called before singleton instantiation.
                  * ======
@@ -571,9 +585,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
                  */
                 invokeBeanFactoryPostProcessors(beanFactory);
 
-                // Register bean processors that intercept bean creation.
                 /**
-                 * !!!! 实例化BeanPostProcessors和实例化BeanFactoryPostProcessors一样
+                 * Register bean processors that intercept bean creation.
+                 *
+                 * 实例化BeanPostProcessors和实例化BeanFactoryPostProcessors一样
                  * 都是使用PostProcessorRegistrationDelegate.registerBeanPostProcessors();
                  */
                 registerBeanPostProcessors(beanFactory);
