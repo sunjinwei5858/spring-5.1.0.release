@@ -124,6 +124,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
     private final List<StringValueResolver> embeddedValueResolvers = new CopyOnWriteArrayList<>();
 
     /**
+     * 存储BeanPostProcessor的集合 get方法高频使用
+     *
      * BeanPostProcessors to apply in createBean.
      */
     private final List<BeanPostProcessor> beanPostProcessors = new CopyOnWriteArrayList<>();
@@ -924,6 +926,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
     }
 
     /**
+     * 这个方法是最频繁的调用方法，获取bean的后置处理器
+     *
      * Return the list of BeanPostProcessors that will get applied
      * to beans created with this factory.
      */
