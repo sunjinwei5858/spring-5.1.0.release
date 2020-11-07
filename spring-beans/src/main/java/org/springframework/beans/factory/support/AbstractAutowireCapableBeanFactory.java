@@ -479,9 +479,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         try {
-            // Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
             /**
-             * 后置处理器的前置处理
+             * Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+             * doCreateBean的前置处理
              * 一般不会在此处生成代理对象，为什么不能生成代理对象，不管是我们的jdk还是cglib代理都不会在此处进行代理
              * 因为我们的真实对象没有生成，所以在这里不会进行生成代理对象，
              * 那么这一步是我们aop和事务的关键，因为在这里进行解析我们的切面和进行缓存切面信息,
@@ -498,7 +498,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         try {
             /**
-             * 真正创建bean的实例化对象的过程
+             * 真正创建bean的实例化对象的过程doCreateBean
              */
             Object beanInstance = doCreateBean(beanName, mbdToUse, args);
             if (logger.isTraceEnabled()) {
@@ -539,7 +539,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
         }
         /**
-         * 调用无参构造进行实例化
+         * bean的第一阶段：调用无参构造进行实例化
          */
         if (instanceWrapper == null) {
             instanceWrapper = createBeanInstance(beanName, mbd, args);
@@ -556,38 +556,46 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         // Allow post-processors to modify the merged bean definition.
         synchronized (mbd.postProcessingLock) {
+            /**
+             * 一开始bean定义的postProcessed：默认为false
+             */
             if (!mbd.postProcessed) {
                 try {
+                    /**
+                     * MergedBeanDefinitionPostProcessor后置处理器可以对刚刚实例化【构造化】的bean进行一些后置处理器
+                     */
                     applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
                 } catch (Throwable ex) {
                     throw new BeanCreationException(mbd.getResourceDescription(), beanName,
                             "Post-processing of merged bean definition failed", ex);
                 }
+                /**
+                 * 将postProcessed属性设置为true
+                 */
                 mbd.postProcessed = true;
             }
         }
 
         // Eagerly cache singletons to be able to resolve circular references
         // even when triggered by lifecycle interfaces like BeanFactoryAware.
-        boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
-                isSingletonCurrentlyInCreation(beanName));
+        boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences && isSingletonCurrentlyInCreation(beanName));
         if (earlySingletonExposure) {
             if (logger.isTraceEnabled()) {
                 logger.trace("Eagerly caching bean '" + beanName +
                         "' to allow for resolving potential circular references");
             }
             /**
-             * 将早期对象【已经构造化但是还没属性注入】添加到三级缓存中！！！即singltonFactories中去
+             * 将早期对象【已经构造化但是还没属性注入】添加到三级缓存中，这里使用工厂模式ObjectFactory进行包装
+             * getObject里面调用了getEarlyBeanReference方法
              */
-            //addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
-
-            addSingletonFactory(beanName, new ObjectFactory() {
+            ObjectFactory objectFactory = new ObjectFactory() {
                 @Override
                 public Object getObject() {
                     Object earlyBeanReference = getEarlyBeanReference(beanName, mbd, bean);
                     return earlyBeanReference;
                 }
-            });
+            };
+            addSingletonFactory(beanName, objectFactory);
         }
 
         // Initialize the bean instance.
@@ -935,6 +943,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     /**
+     * 使用getEarlyBeanReference方法重写ObjectFactory对象工厂的getObject方法，为了支持循环依赖，
+     * 这个getEarlyBeanReference方法其实就是为了扩展，因为此时传入的参数bean已经经过了构造化。
+     * 这个getEarlyBeanReference方法就是为了后置处理器扩展使用的，比如判断有没有SmartInstantiationAwareBeanPostProcessor
+     * <p>
      * Obtain a reference for early access to the specified bean,
      * typically for the purpose of resolving a circular reference.
      *
@@ -948,10 +960,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
             for (BeanPostProcessor bp : getBeanPostProcessors()) {
                 /**
-                 * SmartInstantiationAwareBeanPostProcessor该后置处理器的getEarlyBeanReference方法就是获取到早期对象
-                 * 这个后置处理器可以对早期对象进行扩展，进行修改，这就是该
-                 * 可以在加入三级缓存之前进行操作
-                 * 比如aop就可以进行偷梁换柱!!!!!!
+                 * SmartInstantiationAwareBeanPostProcessor该后置处理器接口的getEarlyBeanReference方法就是获取到早期对象
+                 * 这个后置处理器可以对早期对象进行扩展，进行修改可以在加入三级缓存之前进行操作
+                 * 比如aop就可以进行偷梁换柱!!!!!
+                 * AbstractAutoProxyCreator这个后置处理器就是SmartInstantiationAwareBeanPostProcessor接口的实现类
+                 * #getEarlyBeanReference(java.lang.Object, java.lang.String)
                  */
                 if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
                     SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
@@ -1090,12 +1103,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 Class<?> targetType = determineTargetType(beanName, mbd);
                 if (targetType != null) {
                     /**
-                     * 调用applyBeanPostProcessorsBeforeInstantiation 前置处理 实例化前进行的逻辑 aop的解析和缓存
+                     * 调用实例化前的后置处理器方法BeforeInstantiation：比如aop的解析和缓存
+                     * 注意：实例化和初始化的单词不一样 实例化Instantiation 初始化Initialization
                      */
                     bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
                     if (bean != null) {
                         /**
-                         * 后置处理!!! 如果需要aop代理 那么会在此处进行生成aop代理对象，进行偷梁换柱!!! 目前自己看到的情况好多后置处理器还没 所以可以理解这里是给子类扩展的
+                         * 如果bean不为null 那么调用初始化后的后置处理器方法AfterInitialization：
+                         * 如果需要aop代理 那么会在此处进行生成aop代理对象，进行偷梁换柱!!!
+                         * 目前自己还没看到 bean != null的情况
                          */
                         bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
                     }
@@ -1145,6 +1161,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     /**
+     * 第一步根据合适的策略createBeanInstance：factory-method,constructor autowiring,简单无参构造
+     * <p>
      * Create a new instance for the specified bean, using an appropriate instantiation strategy:
      * factory method, constructor autowiring, or simple instantiation.
      *
@@ -1171,6 +1189,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             return obtainFromSupplier(instanceSupplier, beanName);
         }
 
+        /**
+         * 如果在 RootBeanDefinition 中存在 factoryMethodName 属性，
+         * 或者说在配置文件中配置 了 factory-method，那么 Spring会尝试使用 instantiateUsingFactoryMethod(beanName，mbd,args)方法
+         */
         if (mbd.getFactoryMethodName() != null) {
             return instantiateUsingFactoryMethod(beanName, mbd, args);
         }
@@ -1186,15 +1208,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 }
             }
         }
+        /**
+         * 如果resolved返回true 说明已经解析过 加入了缓存
+         */
         if (resolved) {
             if (autowireNecessary) {
+                /**
+                 * 有参数构造:非常复杂 因为解析参数非常消耗性能
+                 */
                 return autowireConstructor(beanName, mbd, null, null);
             } else {
+                /**
+                 * 最后才是简单的无参数构造
+                 */
                 return instantiateBean(beanName, mbd);
             }
         }
 
         // Candidate constructors for autowiring?
+        /**
+         * 第一次解析 有参构造过程非常复杂 需要解析参数 消耗性能
+         */
         Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
         if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
                 mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
@@ -1208,6 +1242,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         // No special handling: simply use no-arg constructor.
+        /**
+         * 最后轮到无参构造
+         */
         return instantiateBean(beanName, mbd);
     }
 
@@ -1307,7 +1344,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                                 getInstantiationStrategy().instantiate(mbd, beanName, parent),
                         getAccessControlContext());
             } else {
-                beanInstance = getInstantiationStrategy().instantiate(mbd, beanName, parent);
+                /**
+                 * 获取实例化策略：本来直接使用反射实例化是最简单的，但是spring并没有这样做，
+                 * 而是判断bean定义有没有配置methodOverride属性，即look-up或者replace方法
+                 */
+                InstantiationStrategy instantiationStrategy = getInstantiationStrategy();
+                /**
+                 * 实例化策略实例bean
+                 */
+                beanInstance = instantiationStrategy.instantiate(mbd, beanName, parent);
             }
             BeanWrapper bw = new BeanWrapperImpl(beanInstance);
             initBeanWrapper(bw);
