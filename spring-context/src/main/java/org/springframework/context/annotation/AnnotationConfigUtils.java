@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * 注册五个bean定义，有四个后置处理器和一个事件监听工厂
+ * <p>
  * Utility class that allows for convenient registration of common
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} and
  * {@link org.springframework.beans.factory.config.BeanFactoryPostProcessor}
@@ -54,7 +56,7 @@ import java.util.Set;
  * @see ConfigurationClassPostProcessor
  * @see CommonAnnotationBeanPostProcessor
  * @see org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
- * @see org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor
+ * @see org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor 这个后置处理器就是支持jpa的后置处理器
  * @since 2.5
  */
 public abstract class AnnotationConfigUtils {
@@ -99,7 +101,7 @@ public abstract class AnnotationConfigUtils {
             "org.springframework.context.annotation.internalCommonAnnotationProcessor";
 
     /**
-     * The bean name of the internally managed JPA annotation processor.
+     * The bean name of the internally managed JPA annotation processor. 支持jpa注解的后置处理器
      */
     public static final String PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME =
             "org.springframework.context.annotation.internalPersistenceAnnotationProcessor";
@@ -141,6 +143,8 @@ public abstract class AnnotationConfigUtils {
     }
 
     /**
+     * 注册五个bean定义：
+     * <p>
      * Register all relevant annotation post processors in the given registry.
      *
      * @param registry the registry to operate on
@@ -152,24 +156,34 @@ public abstract class AnnotationConfigUtils {
     public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
             BeanDefinitionRegistry registry, @Nullable Object source) {
 
+        /**
+         * 创建DefaultListableBeanFactory容器
+         */
         DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
         if (beanFactory != null) {
             if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
                 beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
             }
             if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
+                // 配置运行autowire注入
                 beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
             }
         }
 
         Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
+        /**
+         * 第一个后置处理器 ConfigurationClassPostProcessor---第一个bean定义
+         */
         if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
             def.setSource(source);
             beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
         }
 
+        /**
+         * 第二个后置处理器 AutowiredAnnotationBeanPostProcessor---第二个bean定义
+         */
         if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
             def.setSource(source);
@@ -177,6 +191,9 @@ public abstract class AnnotationConfigUtils {
         }
 
         // Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
+        /**
+         * 第三个后置处理器 CommonAnnotationBeanPostProcessor--第三个bean定义
+         */
         if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
             def.setSource(source);
@@ -184,6 +201,11 @@ public abstract class AnnotationConfigUtils {
         }
 
         // Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
+        /**
+         * 第四个后置处理器 PersistenceAnnotationBeanPostProcessor，这个后置处理器是为了支持jpa
+         * 这也刚好验证了spring为什么支持jpa，为什么不支持mybatis.
+         * 如果没有开启jpa 那么jpaPresent返回false
+         */
         if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition();
             try {
@@ -197,12 +219,18 @@ public abstract class AnnotationConfigUtils {
             beanDefs.add(registerPostProcessor(registry, def, PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME));
         }
 
+        /**
+         * 第五个后置处理器 EventListenerMethodProcessor---第四个bean定义
+         */
         if (!registry.containsBeanDefinition(EVENT_LISTENER_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(EventListenerMethodProcessor.class);
             def.setSource(source);
             beanDefs.add(registerPostProcessor(registry, def, EVENT_LISTENER_PROCESSOR_BEAN_NAME));
         }
 
+        /**
+         * 注册DefaultEventListenerFactory 事件监听器工厂---第五个bean定义
+         */
         if (!registry.containsBeanDefinition(EVENT_LISTENER_FACTORY_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(DefaultEventListenerFactory.class);
             def.setSource(source);
@@ -220,6 +248,12 @@ public abstract class AnnotationConfigUtils {
         return new BeanDefinitionHolder(definition, beanName);
     }
 
+    /**
+     * 创建容器，注解方式的AnnotationConfigApplicationContext继承GenericApplicationContext，所以
+     *
+     * @param registry
+     * @return
+     */
     @Nullable
     private static DefaultListableBeanFactory unwrapDefaultListableBeanFactory(BeanDefinitionRegistry registry) {
         if (registry instanceof DefaultListableBeanFactory) {

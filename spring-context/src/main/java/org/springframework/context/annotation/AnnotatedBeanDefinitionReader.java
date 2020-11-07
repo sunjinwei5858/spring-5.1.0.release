@@ -34,7 +34,7 @@ import java.lang.annotation.Annotation;
 import java.util.function.Supplier;
 
 /**
- * 这个类的作用：
+ * 这个类的作用：【没有继承和实现BeanDefinitionReader接口，是个单独的类】
  * 1。方便编程式动态注册一个带注解的bean
  * 2。可以替代ClassPathBeanDefinitionScanner，具备相同的解析功能，ClassPathBeanDefinitionScanner是spring完成扫描的核心类。
  * 比如注册配置类，因为配置类无法自己扫描自己，所以AnnotatedBeanDefinitionReader的作用就是注册配置类。
@@ -83,6 +83,16 @@ public class AnnotatedBeanDefinitionReader {
     }
 
     /**
+     * 分析1：
+     * spring容器构造化的时候会创建AnnotatedBeanDefinitionReader，
+     * AnnotatedBeanDefinitionReader进行构造化的时候会进行注册5个bean定义【4个后置处理器+1个事件监听工厂】，
+     * 之前自己都不知道这几个后置处理器的bean定义是何时注册的，
+     * 因为在此处已经注册好ConfigurationClassPostProcessor这些后置处理器，所以后续会进行getBean操作，
+     * 然后添加到单例缓存池，在refresh方法中，会有很多地方需要foreach后置处理器，进行调用BeanFactoryPostProcessor接口
+     * <p>
+     * 分析2：
+     * 注册这五个后置处理器的操作是哪个容器来完成的：DefaultListableBeanFactory的beanDefinitionMap
+     * <p>
      * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry and using
      * the given {@link Environment}.
      *
@@ -97,6 +107,13 @@ public class AnnotatedBeanDefinitionReader {
         Assert.notNull(environment, "Environment must not be null");
         this.registry = registry;
         this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+        /**
+         * 注册五个bean定义：
+         * 4个BeanFactoryPostProcessor后置处理器：ConfigurationClassPostProcessor，AutowiredAnnotationBeanPostProcessor，CommonAnnotationBeanPostProcessor，EventListenerMethodProcessor，
+         * 1个事件监听工厂的bean定义：DefaultEventListenerFactory。
+         * 如果开启了jpa 那么也会注册PersistenceAnnotationBeanPostProcessor后置处理器
+         *
+         */
         AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
     }
 
