@@ -58,11 +58,15 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 
 
     /**
-     * this()构造函数：
+     * this()构造函数：【注意：会先去初始化父类GeneticApplicationContext的无参构造，初始化了DefaultListableBeanFactory,用来存储bean定义的容器】
      * 初始化两个beanDefinition解析类
-     * AnnotatedBeanDefinitionReader：处理配置类 MainConfig
+     * AnnotatedBeanDefinitionReader：提前注册好一些后置处理器的bean定义+处理配置类MainConfig的bean定义
      * ClassPathBeanDefinitionScanner：处理包扫描下面的一系列类 比如mybatis中的mapper包,@MapperScan,或者@ComponentScan
      * 但是真正去包扫描时 而是又重新new了一个ClassPathBeanDefinitionScanner去扫描，这是为什么呢？
+     * <p>
+     * springboot2.1使用AnnotationConfigServletWebServerApplicationContext，
+     * 但是构造方法一样，都是构造AnnotatedBeanDefinitionReader和ClassPathBeanDefinitionScanner
+     * <p>
      * <p>
      * Create a new AnnotationConfigApplicationContext that needs to be populated
      * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
@@ -97,7 +101,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
      */
     public AnnotationConfigApplicationContext(Class<?>... annotatedClasses) {
         /**
-         * 构造函数
+         * 构造函数：做了非常多的事情，和xml方式不一样，xml方式是在refresh做this方法做的事情
          */
         this();
 
