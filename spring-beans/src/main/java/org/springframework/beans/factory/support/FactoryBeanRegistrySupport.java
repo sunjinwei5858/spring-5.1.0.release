@@ -145,7 +145,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
             }
         } else {
             /**
-             * 单例缓存池中没有有这个key：
+             * 单例缓存池中没有这个key：
              * doGetObjectFromFactoryBean+postProcessObjectFromFactoryBean
              */
             Object object = doGetObjectFromFactoryBean(factory, beanName);
