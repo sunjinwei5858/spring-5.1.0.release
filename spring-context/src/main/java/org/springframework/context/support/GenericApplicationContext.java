@@ -107,7 +107,9 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
 
     /**
      * this()构造函数：
-     * ApplicationContext容器初始化时 会先初始化容器DefaultListableBeanFactory
+     * AnnotationConfigApplicationContext构造时会先初始化父类GenericApplicationContext，调用此无参构造，
+     * 创建好存储bean定义的容器DefaultListableBeanFactory，为AnnotatedBeanDefinitionReader解析并注册后置处理器和配置类的bean定义，然后进行缓存做准备，
+     * 2020/11/7号对比了xml方式，才回想起这回事，注册bean定义之后，需要缓存bean定义，那么这个DefaultListableBeanFactory容器是何时进行初始化的，原来是在这里
      * Create a new GenericApplicationContext.
      *
      * @see #registerBeanDefinition
