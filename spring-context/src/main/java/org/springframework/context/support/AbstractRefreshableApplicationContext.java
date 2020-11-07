@@ -26,6 +26,8 @@ import org.springframework.lang.Nullable;
 import java.io.IOException;
 
 /**
+ * 基于xml方式来获取BeanFactory，
+ * <p>
  * Base class for {@link org.springframework.context.ApplicationContext}
  * implementations which are supposed to support multiple calls to {@link #refresh()},
  * creating a new internal bean factory instance every time.
@@ -123,28 +125,33 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 
 
     /**
-     * 这个是xml方式配置bean
+     * refresh-->obtainFreshBeanFactory-->refreshBeanFactory:
+     * 1.createBeanFactory():new DefaultListableBeanFactory() 创建DefaultListableBeanFactory工厂 和GenericApplication创建的工厂类型一样
+     * 2.
+     * <p>
      * This implementation performs an actual refresh of this context's underlying
      * bean factory, shutting down the previous bean factory (if any) and
      * initializing a fresh bean factory for the next phase of the context's lifecycle.
      */
     @Override
     protected final void refreshBeanFactory() throws BeansException {
+        //1如果存在工厂 那么进行销毁
         if (hasBeanFactory()) {
             destroyBeans();
             closeBeanFactory();
         }
 
         try {
-
+            // 2创建DefaultListableBeanFactory工厂
             DefaultListableBeanFactory beanFactory = createBeanFactory();
-
+            // 3设置id
             beanFactory.setSerializationId(getId());
-
+            // 4如果allowBeanDefinitionOverriding和allowCircularReferences属性不为空，进行设置
             customizeBeanFactory(beanFactory);
 
             /**
-             * !!!!
+             * 5调用子类重写的方法：加载bean定义 【注解方式的loadBeanDefinitions这一步早在refresh之前就已经完成了，这是一个区别】
+             * AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.support.DefaultListableBeanFactory)
              */
             loadBeanDefinitions(beanFactory);
 
@@ -225,6 +232,9 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
     }
 
     /**
+     * 进行配置是否支持allowBeanDefinitionOverriding和allowCircularReferences，
+     * 这里进行了不为null的判断，那么抛出问题，是什么会进行赋值的呢？
+     *
      * Customize the internal bean factory used by this context.
      * Called for each {@link #refresh()} attempt.
      * <p>The default implementation applies this context's
