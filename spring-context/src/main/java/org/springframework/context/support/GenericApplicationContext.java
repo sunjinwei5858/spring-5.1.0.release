@@ -270,7 +270,7 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
     //---------------------------------------------------------------------
 
     /**
-     * 如果是使用
+     * 如果是使用注解方式：AnnotationConfigApplicationContext
      * <p>
      * Do nothing: We hold a single internal BeanFactory and rely on callers
      * to register beans through our public methods (or the BeanFactory's).
