@@ -63,7 +63,12 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 /**
- * 真正进行将userService studentService @ComponentScan 注解扫描注册到bean定义容器中的类
+ * 真正进行@ComponentScan和@Import注解扫描注册到bean定义容器中的类!!!!，ClassPathBeanDefinitionScanner很少使用
+ * <p>
+ * 翻译下面的英文注释：
+ * 一般情况下一个@Configuration注解的类只会产生一个ConfigurationClass对象，
+ * 但是因为@Configuration注解的类可能会使用注解@Import引入其他配置类，也可能内部嵌套定义配置类，
+ * 所以总的来看，ConfigurationClassParser分析一个@Configuration注解的类，可能产生任意多个ConfigurationClass对象。
  * <p>
  * Parses a {@link Configuration} class definition, populating a collection of
  * {@link ConfigurationClass} objects (parsing a single Configuration class may result in
@@ -118,6 +123,10 @@ class ConfigurationClassParser {
 
     private final ImportStack importStack = new ImportStack();
 
+    /**
+     * spring5.1.2版本 已经将deferredImportSelectors集合放在了内部类DeferredImportSelectorHandler，这是一个改动，
+     * 目的是为了springboot的@Import(AutoConfigurationImportSelector.class)
+     */
     @Nullable
     private List<DeferredImportSelectorHolder> deferredImportSelectors;
 
@@ -141,6 +150,13 @@ class ConfigurationClassParser {
     }
 
 
+    /**
+     * parse方法进行了很多方式的重载，都将需要注册bean定义的对象使用ConfigurationClass对象封装
+     * parse解析,注意spring5.1.2和当前的spring5.1.0版本已经做了变化!!!!!
+     * 主要是@EnableAutoConfiguration的自动装配处理时机不同了
+     *
+     * @param configCandidates
+     */
     public void parse(Set<BeanDefinitionHolder> configCandidates) {
         this.deferredImportSelectors = new LinkedList<>();
 
@@ -148,10 +164,13 @@ class ConfigurationClassParser {
             BeanDefinition bd = holder.getBeanDefinition();
             try {
                 if (bd instanceof AnnotatedBeanDefinition) {
+                    //重载
                     parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
                 } else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
+                    //重载
                     parse(((AbstractBeanDefinition) bd).getBeanClass(), holder.getBeanName());
                 } else {
+                    //重载
                     parse(bd.getBeanClassName(), holder.getBeanName());
                 }
             } catch (BeanDefinitionStoreException ex) {
@@ -162,19 +181,45 @@ class ConfigurationClassParser {
             }
         }
 
+        /**
+         * 注意spring5.1.2版本已经废除了该方法，
+         * 而是替换成了this.deferredImportSelectorHandler.process();目的就是为了导入spring.factories的EnableAutoConfiguration
+         *
+         */
         processDeferredImportSelectors();
     }
 
+    /**
+     * 重载
+     *
+     * @param className
+     * @param beanName
+     * @throws IOException
+     */
     protected final void parse(@Nullable String className, String beanName) throws IOException {
         Assert.notNull(className, "No bean class name for configuration class bean definition");
         MetadataReader reader = this.metadataReaderFactory.getMetadataReader(className);
         processConfigurationClass(new ConfigurationClass(reader, beanName));
     }
 
+    /**
+     * 重载
+     *
+     * @param clazz
+     * @param beanName
+     * @throws IOException
+     */
     protected final void parse(Class<?> clazz, String beanName) throws IOException {
         processConfigurationClass(new ConfigurationClass(clazz, beanName));
     }
 
+    /**
+     * 重载
+     *
+     * @param metadata
+     * @param beanName
+     * @throws IOException
+     */
     protected final void parse(AnnotationMetadata metadata, String beanName) throws IOException {
         processConfigurationClass(new ConfigurationClass(metadata, beanName));
     }
@@ -195,6 +240,12 @@ class ConfigurationClassParser {
     }
 
 
+    /**
+     * processConfigurationClass公共方法
+     *
+     * @param configClass
+     * @throws IOException
+     */
     protected void processConfigurationClass(ConfigurationClass configClass) throws IOException {
         if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
             return;
@@ -219,6 +270,9 @@ class ConfigurationClassParser {
         // Recursively process the configuration class and its superclass hierarchy.
         SourceClass sourceClass = asSourceClass(configClass);
         do {
+            /**
+             * doProcessConfigurationClass真正做事情的方法
+             */
             sourceClass = doProcessConfigurationClass(configClass, sourceClass);
         }
         while (sourceClass != null);
@@ -227,6 +281,8 @@ class ConfigurationClassParser {
     }
 
     /**
+     * doProcessConfigurationClass真正做parse的方法!!!!
+     * <p>
      * Apply processing and build a complete {@link ConfigurationClass} by reading the
      * annotations, members and methods from the source class. This method can be called
      * multiple times as relevant sources are discovered.
@@ -266,9 +322,8 @@ class ConfigurationClassParser {
                 /** The config class is annotated with @ComponentScan -> perform the scan immediately
                  * 这里进行解析和扫描 @ComponentScan 包下面的bean定义注册，userService的bean定义注册
                  */
-                Set<BeanDefinitionHolder> scannedBeanDefinitions = this.componentScanParser.parse(
-                        componentScan, sourceClass.getMetadata().getClassName()
-                );
+                Set<BeanDefinitionHolder> scannedBeanDefinitions =
+                        this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
                 // Check the set of scanned definitions for any further config classes and parse recursively if needed
                 for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
                     BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
@@ -551,7 +606,11 @@ class ConfigurationClassParser {
                     deferredImport.getConfigurationClass());
         }
         for (DeferredImportSelectorGrouping grouping : groupings.values()) {
-            grouping.getImports().forEach(entry -> {
+            /**
+             * 终于找到了什么时候进行selectImports的操作!!!!
+             */
+            Iterable<Group.Entry> imports = grouping.getImports();
+            imports.forEach(entry -> {
                 ConfigurationClass configurationClass = configurationClasses.get(entry.getMetadata());
                 try {
                     processImports(configurationClass, asSourceClass(configurationClass),
@@ -590,6 +649,9 @@ class ConfigurationClassParser {
             this.importStack.push(configClass);
             try {
                 for (SourceClass candidate : importCandidates) {
+                    /**
+                     * ImportSelector：
+                     */
                     if (candidate.isAssignable(ImportSelector.class)) {
                         // Candidate class is an ImportSelector -> delegate to it to determine imports
                         Class<?> candidateClass = candidate.loadClass();
@@ -598,6 +660,9 @@ class ConfigurationClassParser {
                         ParserStrategyUtils.invokeAwareMethods(selector, this.environment, this.resourceLoader, this.registry);
 
                         if (this.deferredImportSelectors != null && selector instanceof DeferredImportSelector) {
+                            /**
+                             *
+                             */
                             this.deferredImportSelectors.add(new DeferredImportSelectorHolder(configClass, (DeferredImportSelector) selector));
                         } else {
                             String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
@@ -606,15 +671,14 @@ class ConfigurationClassParser {
                         }
                     }
                     /**
-                     * 如果属于ImportBeanDefinitionRegistrar，会将这个类加入到
+                     * ImportBeanDefinitionRegistrar：
                      * 自己发现的两处应用：
                      *
                      * 1。aop的@EnableAspectJAutoProxy 就导入了@Import(AspectJAutoProxyRegistrar.class)，其中AspectJAutoProxyRegistrar实现了ImportBeanDefinitionRegistrar
                      * 2。mybatis-spring 的@MapperScan注解也是@Import(MapperScannerRegistrar.class)，其中MapperScannerRegistrar实现了ImportBeanDefinitionRegistrar
                      */
                     else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
-                        // Candidate class is an ImportBeanDefinitionRegistrar ->
-                        // delegate to it to register additional bean definitions
+                        // Candidate class is an ImportBeanDefinitionRegistrar -> delegate to it to register additional bean definitions
                         Class<?> candidateClass = candidate.loadClass();
 
                         ImportBeanDefinitionRegistrar registrar = BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
@@ -624,8 +688,11 @@ class ConfigurationClassParser {
                     } else {
                         // Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
                         // process it as an @Configuration class
-                        this.importStack.registerImport(
-                                currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
+                        /**
+                         * process it as an @Configuration class
+                         */
+                        this.importStack.registerImport(currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
+
                         processConfigurationClass(candidate.asConfigClass(configClass));
                     }
                 }
@@ -793,6 +860,9 @@ class ConfigurationClassParser {
     }
 
 
+    /**
+     *
+     */
     private static class DeferredImportSelectorGrouping {
 
         private final DeferredImportSelector.Group group;
@@ -817,6 +887,9 @@ class ConfigurationClassParser {
                 this.group.process(deferredImport.getConfigurationClass().getMetadata(),
                         deferredImport.getImportSelector());
             }
+            /**
+             * 进行selectImports方法
+             */
             return this.group.selectImports();
         }
     }
