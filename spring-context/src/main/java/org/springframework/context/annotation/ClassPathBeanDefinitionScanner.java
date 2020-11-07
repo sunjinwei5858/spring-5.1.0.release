@@ -248,6 +248,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 
     /**
+     * 如果是 new AnnotationConfigApplicationContext(String... basePackages) 这种方式初始化容器，才会进行调用这个scan方法，很少用
+     *
      * Perform a scan within the specified base packages.
      *
      * @param basePackages the packages to check for annotated classes
