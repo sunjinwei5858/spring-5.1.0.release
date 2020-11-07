@@ -279,10 +279,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                 }
             }
             /**
-             * 在 getBean 方法中， getObjectForBeanInstance 是个高频率使用的方法
-             * 从bean的实例中获取对象
-             *
-             * 返回对应的实例，有时候诸如BeanFactory的情况并不是直接返回实例本身而是返回指定方法返回的实例。
+             * 在 getBean 方法中， getObjectForBeanInstance 是个高频率使用的方法，
+             * 如果是FactoryBean,内部会调用getObjectFromFactoryBean。
              * 假如我们需要对FactoryBean进行处理，那么这里得到的其实是工厂bean的初始状态，
              * 但是我们真正需要的是工厂bean中定义的factory-method方法中返回的bean。
              * getObjectForBeanInstance方法就是完成这个工作的
@@ -290,6 +288,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
             bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
         } else {
             /**
+             * 一级缓存 二级 三级缓存 都没有,也就是第一次加载
              * 4。原型模式的检查
              * 只有单例情况才会尝试解决循环依赖，原型模式解决不了循环依赖问题 直接抛异常解决。
              * 因为原型模式下 A依赖B B依赖A 那么当依赖注入的时候，就会产生当A还未创建完成，对于B的创建，此时又会创建一个新的A，造成循环依赖
@@ -368,19 +367,23 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                  */
                 if (mbd.isSingleton()) {
                     /**
-                     * 单例模式的创建
+                     * 获取单例
                      */
-                    sharedInstance = getSingleton(beanName, () -> {
-                        try {
-                            return createBean(beanName, mbd, args);
-                        } catch (BeansException ex) {
-                            // Explicitly remove instance from singleton cache: It might have been put there
-                            // eagerly by the creation process, to allow for circular reference resolution.
-                            // Also remove any beans that received a temporary reference to the bean.
-                            destroySingleton(beanName);
-                            throw ex;
+                    ObjectFactory objectFactory = new ObjectFactory() {
+                        @Override
+                        public Object getObject() throws BeansException {
+                            try {
+                                // 调用子类AbstractAutowireCapableBeanFactory实现的createBean()方法
+                                // createBean方法就是ObjectFactory对象工厂使用工厂模式，重写getObject的一种方式
+                                return createBean(beanName, mbd, args);
+                            } catch (BeansException ex) {
+                                destroySingleton(beanName);
+                                throw ex;
+                            }
                         }
-                    });
+                    };
+                    sharedInstance = getSingleton(beanName, objectFactory);
+
                     /**
                      * 并不是直接返回实例本身而是返回指定方法返回的实例：
                      * 如果是FactoryBean 那么调用getObject()返回真正的bean
@@ -895,6 +898,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
         return result;
     }
 
+    /**
+     * 这里进行重复的进行 先移除操作
+     * @param beanPostProcessor the post-processor to register
+     */
     @Override
     public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
         Assert.notNull(beanPostProcessor, "BeanPostProcessor must not be null");
@@ -1660,8 +1667,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
     /**
      * 这里传的是name，而不是beanName【beanName是去除了&和别名的】，所以BeanFactoryUtils.isFactoryDereference(name)这个方法进行判断
-     *
-     *
+     * <p>
+     * <p>
      * Get the object for the given bean instance, either the bean
      * instance itself or its created object in case of a FactoryBean.
      *
