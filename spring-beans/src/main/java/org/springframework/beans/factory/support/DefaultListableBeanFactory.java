@@ -43,7 +43,8 @@ import java.util.stream.Stream;
  * DefaultListableBeanFactory工厂的作用：注册bean定义
  * 1。存储bean定义信息容器的工厂
  * 2。存储bean定义name容器的工厂
- *
+ * 3。提供实现注册bean定义的方法
+ * 4。提前实例化bean的方法，非懒加载，利用
  *
  * <p>
  * Spring's default implementation of the {@link ConfigurableListableBeanFactory}
@@ -130,6 +131,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
     /**
      * Map from dependency type to corresponding autowired value.
+     * 这里存放的是ApplicationContext,BeanFactory
      */
     private final Map<Class<?>, Object> resolvableDependencies = new ConcurrentHashMap<>(16);
 
@@ -150,7 +152,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     private final Map<Class<?>, String[]> singletonBeanNamesByType = new ConcurrentHashMap<>(64);
 
     /**
-     * bean定义name集合
+     * bean定义name集合，存储这些bean定义名称 是为了遍历 实例化bean
      * List of bean definition names, in registration order.
      */
     private volatile List<String> beanDefinitionNames = new ArrayList<>(256);
@@ -683,7 +685,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     //---------------------------------------------------------------------
 
     /**
-     * 这个resolvableDependencies map容器spring没有开放，但是提供了registerResolvableDependency的api给程序员调用
+     * 这个resolvableDependencies map容器spring没有开放，但是提供了registerResolvableDependency的api给程序员调用。
+     * spring的调用在AbstractApplicationContext#prepareBeanFactory()方法中的注册依赖，
+     * 对BeanFactory，ResourceLoader，ApplicationEventPublisher，ApplicationContext 这几个可以直接进行属性注入
      *
      * @param dependencyType the dependency type to register. This will typically
      *                       be a base interface such as BeanFactory, with extensions of it resolved
@@ -967,7 +971,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
             if (hasBeanCreationStarted()) {
                 // Cannot modify startup-time collection elements anymore (for stable iteration)
                 /**
-                 * 防止线程安全
+                 * 保证线程安全
                  */
                 synchronized (this.beanDefinitionMap) {
                     System.out.println("---this.beanDefinitionMap.put(beanName, beanDefinition);" + beanName);
