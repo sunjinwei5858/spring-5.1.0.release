@@ -30,6 +30,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * Spring在DefaultSingletonBeanRegistry类中提供了一个用于缓存单实例Bean的缓存器，
  * 它是一个用HashMap实现的缓存器，单实例的Bean以beanName为键保存在这个HashMap中。
  * <p>
+ * 因此在这里提供了好多方法：添加单例，获取单例, 注册单例
+ * 1.registerSingleton
+ * 2.addSingleton
+ * 3.
+ * <p>
+ * <p>
+ * <p>
  * Generic registry for shared bean instances, implementing the
  * {@link org.springframework.beans.factory.config.SingletonBeanRegistry}.
  * Allows for registering singleton instances that should be shared
@@ -239,6 +246,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
                     ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
                     if (singletonFactory != null) {
                         // 三级缓存存在 那么调用getObject()方法 如果配置了aop 这里会进行偷梁换柱 将targe换成proxy
+                        // getObject调用的是getEarlyBeanReference方法
                         singletonObject = singletonFactory.getObject();
                         // 添加到二级缓存中
                         this.earlySingletonObjects.put(beanName, singletonObject);
@@ -291,8 +299,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
                 }
                 try {
                     /**
-                     * 这里才是真正创建早期对象引用的方法 singletonFactory.getObject();
-                     * 通过入参传入的ObjectFactory的个体Object方法实例化bean
+                     * 使用工厂模式singletonFactory.getObject创建，getObject底层调用了：createBean-->doCreateBean
+                     * 通过入参传入的ObjectFactory的个体Object方法实例化bean，这里其实用了回调方法
                      */
                     singletonObject = singletonFactory.getObject();
                     newSingleton = true;
@@ -318,7 +326,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
                 }
                 if (newSingleton) {
                     /**
-                     * 添加到单例缓存池
+                     * 最后一步 将bean添加到单例缓存池中
                      */
                     addSingleton(beanName, singletonObject);
                 }
