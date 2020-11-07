@@ -267,6 +267,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
     }
 
     /**
+     * 真正进行包扫描的地方doScan方法!!!
+     * <p>
      * Perform a scan within the specified base packages,
      * returning the registered bean definitions.
      * <p>This method does <i>not</i> register an annotation config processor
@@ -279,6 +281,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
         Assert.notEmpty(basePackages, "At least one base package must be specified");
         Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
         for (String basePackage : basePackages) {
+            /**
+             * 过滤包下面加了@Component注解的类
+             */
             Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
             for (BeanDefinition candidate : candidates) {
                 ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
@@ -288,7 +293,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
                     postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
                 }
                 /**
-                 * 如果属于注解修饰的类 那么使用AnnotationConfigUtils工具类进行注册
+                 * 如果属于注解修饰的类 那么使用AnnotationConfigUtils工具类进行设置bean定义的一些通用属性 相关属性：懒加载Lazy，dependsOn，Role，Description
                  */
                 if (candidate instanceof AnnotatedBeanDefinition) {
                     AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
@@ -298,7 +303,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
                     definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 
                     /**
-                     * 此处进行注册bean定义
+                     * 此处进行注册bean定义 使用BeanDefinitionReaderUtils工具类进行注册bean定义
                      */
                     beanDefinitions.add(definitionHolder);
                     registerBeanDefinition(definitionHolder, this.registry);
