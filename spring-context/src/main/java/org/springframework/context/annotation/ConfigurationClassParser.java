@@ -63,12 +63,16 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 /**
- * ConfigurationClassPostProcessor后置处理器调用该解析器进行解析@ComponentScan和@Import
+ * ConfigurationClassPostProcessor后置处理器调用该解析器进行解析配置类：递归调用，有六种形式，五个注解形式+一个接口默认方法
+ *
  * 1。@ComponentScan：调用了ClassPathBeanDefinitionScanner进行包扫描注册bean定义，递归调用，一个类上可能不止一个@Component注解
  * 2。@Import：主要是@EnableXXX @MapperScan 导入ImportBeanDefinitionRegistrar的实现类 这个接口就是用来整合第三方做扩展的，
  *  重写registerBeanDefinitions方法，在方法里面可以让一个类不需要加任何spring的注解注册到spring容器。
- *
  *  因为ConfigurationClassPostProcessor后置处理器的loadBeanDefinitions会去加载ImportBeanDefinitionRegistrar实现类的registerBeanDefinitions方法
+ * 3。 @component
+ * 4. @Bean
+ * 5. @PropertySources
+ * 6。接口的默认方法
  *
  * <p>
  * 翻译下面的英文注释：
@@ -287,7 +291,8 @@ class ConfigurationClassParser {
     }
 
     /**
-     * doProcessConfigurationClass真正做parse的方法!!!!
+     * doProcessConfigurationClass真正做parse的方法：
+     *
      * <p>
      * Apply processing and build a complete {@link ConfigurationClass} by reading the
      * annotations, members and methods from the source class. This method can be called
@@ -301,12 +306,18 @@ class ConfigurationClassParser {
     protected final SourceClass doProcessConfigurationClass(ConfigurationClass configClass, SourceClass sourceClass)
             throws IOException {
 
+        /**
+         * 1。处理@Component注解 递归调用
+         */
         if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
             // Recursively process any member (nested) classes first
             processMemberClasses(configClass, sourceClass);
         }
 
-        // Process any @PropertySource annotations
+        /**
+         * Process any @PropertySource annotations
+         * 2。处理@PropertySources注解 递归调用
+         */
         for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
                 sourceClass.getMetadata(), PropertySources.class,
                 org.springframework.context.annotation.PropertySource.class)) {
@@ -318,7 +329,10 @@ class ConfigurationClassParser {
             }
         }
 
-        // Process any @ComponentScan annotations
+        /**
+         * Process any @ComponentScan annotations
+         * 3。处理@ComponentScans注解 递归调用
+         */
         Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
                 sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
         if (!componentScans.isEmpty() &&
@@ -346,9 +360,10 @@ class ConfigurationClassParser {
             }
         }
 
-        // Process any @Import annotations
         /**
-         * 处理@Import注解 将@Import导入的类缓存到ConfigurationClass的importBeanDefinitionRegistrars容器中
+         * Process any @Import annotations
+         * 4。处理@Import注解
+         * 将@Import导入的类缓存到ConfigurationClass的importBeanDefinitionRegistrars容器中
          * 便于ConfigurationClassPostProcessor后置处理器调用，统一进行注册包扫描和配置类即所有类的bean定义
          */
         Set<SourceClass> imports = getImports(sourceClass);
@@ -366,13 +381,19 @@ class ConfigurationClassParser {
             }
         }
 
-        // Process individual @Bean methods
+        /**
+         * 5。Process individual @Bean methods
+         * 处理@Bean方式
+         */
         Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
         for (MethodMetadata methodMetadata : beanMethods) {
             configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
         }
 
-        // Process default methods on interfaces
+        /**
+         * 6。Process default methods on interfaces
+         * 处理接口的默认方法 因为jdk8支持接口可以默认方法
+         */
         processInterfaces(configClass, sourceClass);
 
         // Process superclass, if any
