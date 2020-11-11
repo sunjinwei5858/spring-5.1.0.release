@@ -321,10 +321,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
         do {
             /**
              * 这里parse做了很多事情：
-             * 1.扫描
-             * 1。将userService注册到bean定义map中
+             * 1。@ComponentScan 包扫描注册bean定义
              * 2。将@EnableXXX 注解中@Import中的封装到ConfigutationClass
              * 3。如果是springboot还会将自动配置的类封装到ConfigutationClass
+             *
+             * 将配置信息封装成ConfigurationClasses对象，可能是一个ConfigurationClasses对象集合，因为会有各种注解
              */
             parser.parse(candidates);
             parser.validate();
@@ -339,9 +340,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                         this.importBeanNameGenerator, parser.getImportRegistry());
             }
             /**
-             * 这里进行注册
-             * 配置在MyApsct上的@EnableAspectJAutoProxy()导入的AspectJAutoProxyRegistrar这个ImportBeanDefinitionRegistrar接口实现类注册到bean定义中去
-             *
+             * 使用ConfigurationClassBeanDefinitionReader加载注册bean定义，有多种类型：
+             * 1。registerBeanDefinitionForImportedConfigurationClass
+             * 2。loadBeanDefinitionsForBeanMethod
+             * 3。loadBeanDefinitionsFromImportedResources
+             * 4。loadBeanDefinitionsFromRegistrars
+             * 注解：@EnableXXX，@MapperScan 本质都是@Import导入一个ImportBeanDefinitionRegistrar接口的实现类，属于第四种，
+             * 会调用ImportBeanDefinitionRegistrar接口的registerBeanDefinitions方法，在这个方法可以实现自己的方式注册bean定义
              */
             this.reader.loadBeanDefinitions(configClasses);
             alreadyParsed.addAll(configClasses);
