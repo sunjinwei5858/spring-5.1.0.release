@@ -32,6 +32,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
+ * 目前找到的一个扩展，mybatis-spring的ClassPathMapperScanner继承了ClassPathBeanDefinitionScanner，
+ * 重写了doScan方法，这是mybatis整合spring一个非常牛逼的闪光点，doScan方法继续super.doScan，
+ * 返回beanDefinitions后，进行修改bean定义的beanClass属性，因为mapper是接口，不能被实例化，这里进行了偷天换日，换成了MapperFactoryBean
+ *
+ *
  * A bean definition scanner that detects bean candidates on the classpath,
  * registering corresponding bean definitions with a given registry ({@code BeanFactory}
  * or {@code ApplicationContext}).
@@ -269,7 +274,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
     }
 
     /**
-     * 真正进行包扫描的地方doScan方法!!!
+     * 真正进行包扫描的地方doScan方法!!!，第三方框架的一个扩展：mybatis-spring的ClassPathMapperScanner重写了doScan方法
      * <p>
      * Perform a scan within the specified base packages,
      * returning the registered bean definitions.
