@@ -42,6 +42,10 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
+ * ConfigurationClassPostProcessor后置处理器：
+ * 1。使用ConfigurationClassParser进行解析配置类，将需要注册bean定义的类封装成ConfigurationClass
+ * 2。使用ConfigurationClassBeanDefinitionReader进行加载bean定义，传入解析好的ConfigurationClass对象集合
+ *
  * Reads a given fully-populated set of ConfigurationClass instances, registering bean
  * definitions with the given {@link BeanDefinitionRegistry} based on its contents.
  *

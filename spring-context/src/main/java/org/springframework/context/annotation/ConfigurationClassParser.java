@@ -63,7 +63,13 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 /**
- * 真正进行@ComponentScan和@Import注解扫描注册到bean定义容器中的类!!!!，ClassPathBeanDefinitionScanner很少使用
+ * ConfigurationClassPostProcessor后置处理器调用该解析器进行解析@ComponentScan和@Import
+ * 1。@ComponentScan：调用了ClassPathBeanDefinitionScanner进行包扫描注册bean定义，递归调用，一个类上可能不止一个@Component注解
+ * 2。@Import：主要是@EnableXXX @MapperScan 导入ImportBeanDefinitionRegistrar的实现类 这个接口就是用来整合第三方做扩展的，
+ *  重写registerBeanDefinitions方法，在方法里面可以让一个类不需要加任何spring的注解注册到spring容器。
+ *
+ *  因为ConfigurationClassPostProcessor后置处理器的loadBeanDefinitions会去加载ImportBeanDefinitionRegistrar实现类的registerBeanDefinitions方法
+ *
  * <p>
  * 翻译下面的英文注释：
  * 一般情况下一个@Configuration注解的类只会产生一个ConfigurationClass对象，
