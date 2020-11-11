@@ -331,6 +331,9 @@ class ConfigurationClassParser {
                         bdCand = holder.getBeanDefinition();
                     }
                     if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
+                        /**
+                         * 这里会进行递归调用parse方法 UserService这个类除了加了@Component注解 有没有加别的注解 如果有的话 这里进行递归解析
+                         */
                         parse(bdCand.getBeanClassName(), holder.getBeanName());
                     }
                 }
