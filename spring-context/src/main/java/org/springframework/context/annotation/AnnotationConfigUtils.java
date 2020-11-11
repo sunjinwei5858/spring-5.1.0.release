@@ -39,7 +39,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 注册五个bean定义，有四个后置处理器和一个事件监听工厂
+ * 注册五个bean定义，有四个后置处理器和一个事件监听工厂：
+ * 2个BeanFactory后置处理器+2个Bean后置处理器+1个事件监听工厂
  * <p>
  * Utility class that allows for convenient registration of common
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} and
@@ -143,7 +144,7 @@ public abstract class AnnotationConfigUtils {
     }
 
     /**
-     * 注册五个bean定义：
+     * 注册五个bean定义：2个BeanFactory后置处理器+2个Bean后置处理器+1个事件监听工厂
      * <p>
      * Register all relevant annotation post processors in the given registry.
      *
@@ -173,7 +174,7 @@ public abstract class AnnotationConfigUtils {
         Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
         /**
-         * 第一个后置处理器 ConfigurationClassPostProcessor---第一个bean定义
+         * 第一个BeanFactory后置处理器 ConfigurationClassPostProcessor---第一个bean定义
          */
         if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
@@ -182,7 +183,7 @@ public abstract class AnnotationConfigUtils {
         }
 
         /**
-         * 第二个后置处理器 AutowiredAnnotationBeanPostProcessor---第二个bean定义
+         * 第二个BeanPost后置处理器 AutowiredAnnotationBeanPostProcessor---第二个bean定义
          */
         if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
@@ -192,7 +193,7 @@ public abstract class AnnotationConfigUtils {
 
         // Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
         /**
-         * 第三个后置处理器 CommonAnnotationBeanPostProcessor--第三个bean定义
+         * 第三个BeanPost后置处理器 CommonAnnotationBeanPostProcessor--第三个bean定义
          */
         if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
@@ -202,7 +203,7 @@ public abstract class AnnotationConfigUtils {
 
         // Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
         /**
-         * 第四个后置处理器 PersistenceAnnotationBeanPostProcessor，这个后置处理器是为了支持jpa
+         * 第四个BeanPost后置处理器 PersistenceAnnotationBeanPostProcessor，这个后置处理器是为了支持jpa
          * 这也刚好验证了spring为什么支持jpa，为什么不支持mybatis.
          * 如果没有开启jpa 那么jpaPresent返回false
          */
@@ -220,7 +221,7 @@ public abstract class AnnotationConfigUtils {
         }
 
         /**
-         * 第五个后置处理器 EventListenerMethodProcessor---第四个bean定义
+         * 第五个BeanFactory后置处理器 EventListenerMethodProcessor---第五个bean定义
          */
         if (!registry.containsBeanDefinition(EVENT_LISTENER_PROCESSOR_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(EventListenerMethodProcessor.class);
@@ -229,7 +230,7 @@ public abstract class AnnotationConfigUtils {
         }
 
         /**
-         * 注册DefaultEventListenerFactory 事件监听器工厂---第五个bean定义
+         * 注册DefaultEventListenerFactory 事件监听器工厂---第六个bean定义
          */
         if (!registry.containsBeanDefinition(EVENT_LISTENER_FACTORY_BEAN_NAME)) {
             RootBeanDefinition def = new RootBeanDefinition(DefaultEventListenerFactory.class);
