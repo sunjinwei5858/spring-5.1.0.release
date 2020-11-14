@@ -839,7 +839,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         System.out.println();
         logger.info("------------------要实例化的beanDefinitionNames====" + beanNames);
         System.out.println();
-        // Trigger initialization of all non-lazy singleton beans...
+        /**
+         * 初始化所有非懒加载的bean
+         * 注意：
+         * 如果是FactoryBean 那么只会初始化这个FactoryBean类，并不是真正初始化getObject里面的对象；
+         * 除非是SmartFactoryBean 并且isEagerInit返回true。
+         */
         for (String beanName : beanNames) {
 
             RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
@@ -852,7 +857,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
                  */
                 if (isFactoryBean(beanName)) {
                     /**
-                     * 是工厂bean的话 给benaName加前缀 & 符号
+                     * 是工厂bean的话 给beanName加前缀 & 符号
                      */
                     Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
                     if (bean instanceof FactoryBean) {
@@ -863,6 +868,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
                                             ((SmartFactoryBean<?>) factory)::isEagerInit,
                                     getAccessControlContext());
                         } else {
+                            /**
+                             * 如果FactoryBean是SmartFactoryBean，并且isEagerInit这个接口方法返回true，那么提前加载，默认为false
+                             */
                             isEagerInit = (factory instanceof SmartFactoryBean &&
                                     ((SmartFactoryBean<?>) factory).isEagerInit());
                         }
