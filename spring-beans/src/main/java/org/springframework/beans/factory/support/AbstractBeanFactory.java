@@ -258,7 +258,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
         Object bean;
 
         /**
-         * 2.尝试从缓存中加载单例
+         * 2.尝试从缓存中加载单例,有两种情况 getSingleton不为空：
+         *  1：循环依赖
+         *  2：FactoryBean为SmartFactoryBean类型 并且isEagerInit属性为true 代表需要提前初始化
          *
          * !!!为什么要首先使用这段代码？调用父类DefaultSingletonBeanRegistry的getSingleton()方法
          * 因为在创建单例bean的时候会存在依赖注入的情况，而在创建依赖的时候为了避免循环依赖
@@ -369,7 +371,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                  */
                 if (mbd.isSingleton()) {
                     /**
-                     * 获取单例
+                     * 从三级缓存中的对象工厂中创建单例，objectFactory.getObject()-->createBean
                      */
                     ObjectFactory objectFactory = new ObjectFactory() {
                         @Override
@@ -387,8 +389,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                     sharedInstance = getSingleton(beanName, objectFactory);
 
                     /**
-                     * 并不是直接返回实例本身而是返回指定方法返回的实例：
-                     * 如果是FactoryBean 那么调用getObject()返回真正的bean
+                     *
                      */
                     bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
                 } else if (mbd.isPrototype()) {
@@ -1670,8 +1671,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
     }
 
     /**
-     * 这里传的是name，而不是beanName【beanName是去除了&和别名的】，所以BeanFactoryUtils.isFactoryDereference(name)这个方法进行判断
-     * <p>
+     * 注意：
+     * name：可能是 包含了 "&"符号
+     * beanName: 不包含任何符号的
+     * BeanFactoryUtils.isFactoryDereference(name)这个方法使用的是name去判断，
+     * spring容器初始化时DefaultListableBeanFactory的preInstantiateSingletons方法会判断是不是FactoryBean
+     * 如果是，那么会进行拼接 name为 &开头，所以该方法返回true，只是单纯的返回这个类对象
      * <p>
      * Get the object for the given bean instance, either the bean
      * instance itself or its created object in case of a FactoryBean.
