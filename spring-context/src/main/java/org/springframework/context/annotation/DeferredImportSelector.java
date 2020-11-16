@@ -16,10 +16,10 @@
 
 package org.springframework.context.annotation;
 
-import java.util.Objects;
-
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.lang.Nullable;
+
+import java.util.Objects;
 
 /**
  * A variation of {@link ImportSelector} that runs after all {@code @Configuration} beans
@@ -39,81 +39,82 @@ import org.springframework.lang.Nullable;
  */
 public interface DeferredImportSelector extends ImportSelector {
 
-	/**
-	 * Return a specific import group or {@code null} if no grouping is required.
-	 * @return the import group class or {@code null}
-	 */
-	@Nullable
-	default Class<? extends Group> getImportGroup() {
-		return null;
-	}
+    /**
+     * Return a specific import group or {@code null} if no grouping is required.
+     *
+     * @return the import group class or {@code null}
+     */
+    @Nullable
+    default Class<? extends Group> getImportGroup() {
+        return null;
+    }
 
 
-	/**
-	 * Interface used to group results from different import selectors.
-	 */
-	interface Group {
+    /**
+     * Interface used to group results from different import selectors.
+     */
+    interface Group {
 
-		/**
-		 * Process the {@link AnnotationMetadata} of the importing @{@link Configuration}
-		 * class using the specified {@link DeferredImportSelector}.
-		 */
-		void process(AnnotationMetadata metadata, DeferredImportSelector selector);
+        /**
+         * Process the {@link AnnotationMetadata} of the importing @{@link Configuration}
+         * class using the specified {@link DeferredImportSelector}.
+         */
+        void process(AnnotationMetadata metadata, DeferredImportSelector selector);
 
-		/**
-		 * Return the {@link Entry entries} of which class(es) should be imported for this
-		 * group.
-		 */
-		Iterable<Entry> selectImports();
+        /**
+         * Return the {@link Entry entries} of which class(es) should be imported for this
+         * group.
+         */
+        Iterable<Entry> selectImports();
 
-		/**
-		 * An entry that holds the {@link AnnotationMetadata} of the importing
-		 * {@link Configuration} class and the class name to import.
-		 */
-		class Entry {
+        /**
+         * An entry that holds the {@link AnnotationMetadata} of the importing
+         * {@link Configuration} class and the class name to import.
+         */
+        class Entry {
 
-			private final AnnotationMetadata metadata;
+            private final AnnotationMetadata metadata;
 
-			private final String importClassName;
+            private final String importClassName;
 
-			public Entry(AnnotationMetadata metadata, String importClassName) {
-				this.metadata = metadata;
-				this.importClassName = importClassName;
-			}
+            public Entry(AnnotationMetadata metadata, String importClassName) {
+                this.metadata = metadata;
+                this.importClassName = importClassName;
+            }
 
-			/**
-			 * Return the {@link AnnotationMetadata} of the importing
-			 * {@link Configuration} class.
-			 */
-			public AnnotationMetadata getMetadata() {
-				return this.metadata;
-			}
+            /**
+             * Return the {@link AnnotationMetadata} of the importing
+             * {@link Configuration} class.
+             */
+            public AnnotationMetadata getMetadata() {
+                return this.metadata;
+            }
 
-			/**
-			 * Return the fully qualified name of the class to import.
-			 */
-			public String getImportClassName() {
-				return this.importClassName;
-			}
+            /**
+             * Return the fully qualified name of the class to import.
+             */
+            public String getImportClassName() {
+                return this.importClassName;
+            }
 
-			@Override
-			public boolean equals(Object o) {
-				if (this == o) {
-					return true;
-				}
-				if (o == null || getClass() != o.getClass()) {
-					return false;
-				}
-				Entry entry = (Entry) o;
-				return Objects.equals(this.metadata, entry.metadata) &&
-						Objects.equals(this.importClassName, entry.importClassName);
-			}
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+                Entry entry = (Entry) o;
+                return Objects.equals(this.metadata, entry.metadata) &&
+                        Objects.equals(this.importClassName, entry.importClassName);
+            }
 
-			@Override
-			public int hashCode() {
-				return Objects.hash(this.metadata, this.importClassName);
-			}
-		}
-	}
+            @Override
+            public int hashCode() {
+                return Objects.hash(this.metadata, this.importClassName);
+            }
+        }
+    }
 
 }
