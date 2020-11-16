@@ -45,7 +45,7 @@ import java.util.*;
  * ConfigurationClassPostProcessor后置处理器：
  * 1。使用ConfigurationClassParser进行解析配置类，将需要注册bean定义的类封装成ConfigurationClass
  * 2。使用ConfigurationClassBeanDefinitionReader进行加载bean定义，传入解析好的ConfigurationClass对象集合
- *
+ * <p>
  * Reads a given fully-populated set of ConfigurationClass instances, registering bean
  * definitions with the given {@link BeanDefinitionRegistry} based on its contents.
  *
@@ -111,6 +111,8 @@ class ConfigurationClassBeanDefinitionReader {
     }
 
     /**
+     * 注册bean定义的地方
+     * <p>
      * Read a particular {@link ConfigurationClass}, registering bean definitions
      * for the class itself and all of its {@link Bean} methods.
      */
@@ -125,19 +127,28 @@ class ConfigurationClassBeanDefinitionReader {
             this.importRegistry.removeImportingClass(configClass.getMetadata().getClassName());
             return;
         }
-
+        /**
+         * 1。处理@Import注解导入的该类 注册bean定义
+         * 比如@EnableAspectJAutoProxy()的@Import(AspectJAutoProxyRegistrar.class) 注册AspectJAutoProxyRegistrar这个类的bean定义
+         */
         if (configClass.isImported()) {
             registerBeanDefinitionForImportedConfigurationClass(configClass);
         }
+
+        /**
+         * 2。处理@Bean注解 注册bean定义
+         * 比如：
+         * 事务的ProxyTransactionManagementConfiguration 有三个@Bean 注册bean定义
+         */
         for (BeanMethod beanMethod : configClass.getBeanMethods()) {
             loadBeanDefinitionsForBeanMethod(beanMethod);
         }
-
         loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+
         /**
-         * 这里将@EnableAspectJAutoProxy()的@Import(AspectJAutoProxyRegistrar.class)
-         * 执行AspectJAutoProxyRegistrar的registerBeanDefinitions()方法
-         * 将aop代理的后置处理器AnnotationAwareAspectJAutoProxyCreator注册到容器
+         * 3。处理实现了ImportBeanDefinitionRegistrar接口，调用registerBeanDefinitions()方法注册bean定义
+         * 比如：
+         * aop中的执行AspectJAutoProxyRegistrar的registerBeanDefinitions()方法，将aop代理的后置处理器AnnotationAwareAspectJAutoProxyCreator注册到容器
          */
         Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> importBeanDefinitionRegistrars = configClass.getImportBeanDefinitionRegistrars();
         loadBeanDefinitionsFromRegistrars(importBeanDefinitionRegistrars);

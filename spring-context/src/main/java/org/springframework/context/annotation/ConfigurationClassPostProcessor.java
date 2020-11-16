@@ -322,8 +322,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
             /**
              * 这里parse做了很多事情：
              * 1。@ComponentScan 包扫描注册bean定义
-             * 2。将@EnableXXX 注解中@Import中的封装到ConfigutationClass
-             * 3。如果是springboot还会将自动配置的类封装到ConfigutationClass
+             * 2。将@EnableXXX 注解中@Import导入的ImportBeanDefinitionRegistrar实现类 添加到ConfigutationClass的importBeanDefinitionRegistrars容器
+             * 3。将@EnableXXX 注解中@Import导入的ImportSelect实现类 添加到ConfigurationClassParser的deferredImportSelectors这个linkedlist集合
              *
              * 将配置信息封装成ConfigurationClasses对象，可能是一个ConfigurationClasses对象集合，因为会有各种注解
              */

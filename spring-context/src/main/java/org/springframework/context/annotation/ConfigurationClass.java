@@ -52,8 +52,14 @@ final class ConfigurationClass {
     @Nullable
     private String beanName;
 
+    /**
+     * ConfigurationClass集合属性
+     */
     private final Set<ConfigurationClass> importedBy = new LinkedHashSet<>(1);
 
+    /**
+     * 注解@Bean的方法
+     */
     private final Set<BeanMethod> beanMethods = new LinkedHashSet<>();
 
     private final Map<String, Class<? extends BeanDefinitionReader>> importedResources =
@@ -64,7 +70,7 @@ final class ConfigurationClass {
      * 当使用ConfigurationClassParser进行parse解析的时候，会进行put到此容器
      * 什么时候进行get？
      * ConfigurationClassPostProcessor后置处理器调用postProcessBeanDefinitionRegistry进行注册 扫描类或者配置类 所有类的bean定义的从该容器get
-     *
+     * <p>
      * 比如在
      * MyAspect类上配置了@EnableAspectJAutoProxy() 那么就会导入ImportBeanDefinitionRegistrar接口的实现类AspectJAutoProxyRegistrar
      * 当然也可以在MainConfig配置类上配置@EnableAspectJAutoProxy() 那么MainConfig对应的ConfigurationClass对象的importBeanDefinitionRegistrars，

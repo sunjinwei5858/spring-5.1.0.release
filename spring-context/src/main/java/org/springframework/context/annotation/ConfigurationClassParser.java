@@ -66,7 +66,9 @@ import java.util.*;
  * ConfigurationClassPostProcessor后置处理器调用该解析器进行解析配置类：递归调用，有六种形式，五个注解形式+一个接口默认方法
  *
  * 1。@ComponentScan：调用了ClassPathBeanDefinitionScanner进行包扫描注册bean定义，递归调用，一个类上可能不止一个@Component注解
- * 2。@Import：主要是@EnableXXX @MapperScan 导入ImportBeanDefinitionRegistrar的实现类 这个接口就是用来整合第三方做扩展的，
+ * 2。@Import：主要是@EnableXXX @MapperScan
+ *  导入ImportBeanDefinitionRegistrar的实现类 这个接口就是用来整合第三方做扩展的，
+ *  导入ImportSelector的实现类 动态加载
  *  重写registerBeanDefinitions方法，在方法里面可以让一个类不需要加任何spring的注解注册到spring容器。
  *  因为ConfigurationClassPostProcessor后置处理器的loadBeanDefinitions会去加载ImportBeanDefinitionRegistrar实现类的registerBeanDefinitions方法
  * 3。 @component
@@ -134,6 +136,8 @@ class ConfigurationClassParser {
     private final ImportStack importStack = new ImportStack();
 
     /**
+     * 注意：deferr 延迟的 推迟的
+     * 只有是实现了deferredImportSelectors的接口才会添加到这个集合，比如springboot，但是事务的不会
      * spring5.1.2版本 已经将deferredImportSelectors集合放在了内部类DeferredImportSelectorHandler，这是一个改动，
      * 目的是为了springboot的@Import(AutoConfigurationImportSelector.class)
      */
@@ -161,6 +165,10 @@ class ConfigurationClassParser {
 
 
     /**
+     * 这里的parse方法进行两个处理：
+     * 1。parse 解析注解 包扫描
+     * 2。processDeferredImportSelectors 处理实现了DeferredImportSelectors接口的方法
+     *
      * parse方法进行了很多方式的重载，都将需要注册bean定义的对象使用ConfigurationClass对象封装
      * parse解析,注意spring5.1.2和当前的spring5.1.0版本已经做了变化!!!!!
      * 主要是@EnableAutoConfiguration的自动装配处理时机不同了
@@ -168,6 +176,7 @@ class ConfigurationClassParser {
      * @param configCandidates
      */
     public void parse(Set<BeanDefinitionHolder> configCandidates) {
+        // 初始化deferredImportSelectors集合
         this.deferredImportSelectors = new LinkedList<>();
 
         for (BeanDefinitionHolder holder : configCandidates) {
@@ -192,9 +201,10 @@ class ConfigurationClassParser {
         }
 
         /**
-         * 注意spring5.1.2版本已经废除了该方法，
+         * 注意：
+         * 1。如果有DeferredImportSelectors类型的 那么会进行处理；springboot是有的，springboot大量使用了DeferredImportSelectors
+         * 2。spring5.1.2版本已经废除了该方法，当前版本是5.1.0
          * 而是替换成了this.deferredImportSelectorHandler.process();目的就是为了导入spring.factories的EnableAutoConfiguration
-         *
          */
         processDeferredImportSelectors();
     }
@@ -251,7 +261,7 @@ class ConfigurationClassParser {
 
 
     /**
-     * processConfigurationClass公共方法
+     * processConfigurationClass公共方法，会进行递归调用
      *
      * @param configClass
      * @throws IOException
@@ -342,8 +352,9 @@ class ConfigurationClassParser {
                 /** The config class is annotated with @ComponentScan -> perform the scan immediately
                  * 这里进行解析和扫描 @ComponentScan 包下面的bean定义注册，userService的bean定义注册
                  */
-                Set<BeanDefinitionHolder> scannedBeanDefinitions =
-                        this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
+                Set<BeanDefinitionHolder> scannedBeanDefinitions = this.componentScanParser.parse(
+                        componentScan, sourceClass.getMetadata().getClassName()
+                );
                 // Check the set of scanned definitions for any further config classes and parse recursively if needed
                 for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
                     BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
@@ -363,8 +374,10 @@ class ConfigurationClassParser {
         /**
          * Process any @Import annotations
          * 4。处理@Import注解
-         * 将@Import导入的类缓存到ConfigurationClass的importBeanDefinitionRegistrars容器中
-         * 便于ConfigurationClassPostProcessor后置处理器调用，统一进行注册包扫描和配置类即所有类的bean定义
+         * 有好几种情况：ImportSelector ImportBeanDefinitionRegistar
+         *  4.1 ImportBeanDefinitionRegistar实现类缓存到ConfigurationClass的importBeanDefinitionRegistrars容器中
+         *      便于ConfigurationClassPostProcessor后置处理器调用，统一进行注册包扫描和配置类即所有类的bean定义
+         *  4.2 ImportSelector 调用selectImports方法
          */
         Set<SourceClass> imports = getImports(sourceClass);
         processImports(configClass, sourceClass, imports, true);
@@ -571,6 +584,8 @@ class ConfigurationClassParser {
 
 
     /**
+     * 返回所有@Import相关的注解信息
+     *
      * Returns {@code @Import} class, considering all meta-annotations.
      */
     private Set<SourceClass> getImports(SourceClass sourceClass) throws IOException {
@@ -616,6 +631,9 @@ class ConfigurationClassParser {
         }
     }
 
+    /**
+     * 处理DeferredImportSelectors类型的:springboot有大量应用
+     */
     private void processDeferredImportSelectors() {
         List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
         this.deferredImportSelectors = null;
@@ -637,7 +655,8 @@ class ConfigurationClassParser {
         }
         for (DeferredImportSelectorGrouping grouping : groupings.values()) {
             /**
-             * 终于找到了什么时候进行selectImports的操作!!!!
+             * grouping.getImports()方法：调用selectImport方法
+             * springboot导入自动配置类就在此处
              */
             Iterable<Group.Entry> imports = grouping.getImports();
             imports.forEach(entry -> {
@@ -666,6 +685,19 @@ class ConfigurationClassParser {
         return group;
     }
 
+    /**
+     * 1。ImportSelector接口
+     * 2。DeferredImportSelector接口
+     * 3。ImportBeanDefinitionRegistrar接口
+     * 4。当成@Configuration配置类来处理
+     *
+     * 注意：1，2，3都会先判断是否实现了aware接口 如果有 调用aware接口方法
+     *
+     * @param configClass
+     * @param currentSourceClass
+     * @param importCandidates
+     * @param checkForCircularImports
+     */
     private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
                                 Collection<SourceClass> importCandidates, boolean checkForCircularImports) {
 
@@ -680,49 +712,65 @@ class ConfigurationClassParser {
             try {
                 for (SourceClass candidate : importCandidates) {
                     /**
-                     * ImportSelector：
+                     * 1。ImportSelector接口：
+                     * 一处应用：
+                     * @EnableTransactionManagement 开始事务注解，@Import(TransactionManagementConfigurationSelector.class)
+                     * 其中TransactionManagementConfigurationSelector实现了ImportSelector接口
                      */
                     if (candidate.isAssignable(ImportSelector.class)) {
                         // Candidate class is an ImportSelector -> delegate to it to determine imports
                         Class<?> candidateClass = candidate.loadClass();
+
                         ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
-
+                        /**
+                         * 注意：ImportSelector的实现类如果实现了Aware接口 那么会先调用aware方法
+                         */
                         ParserStrategyUtils.invokeAwareMethods(selector, this.environment, this.resourceLoader, this.registry);
-
                         if (this.deferredImportSelectors != null && selector instanceof DeferredImportSelector) {
                             /**
-                             *
+                             * 1-1 如果是DeferredImportSelector，添加到这个LinkedList集合。属于延迟的
+                             * springboot使用这个接口，走这里
                              */
                             this.deferredImportSelectors.add(new DeferredImportSelectorHolder(configClass, (DeferredImportSelector) selector));
                         } else {
-                            String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
+                            /**
+                             * 1-2 如果是普通的ImportSelector走这里，调用selectImports方法，
+                             * 事务的TransactionManagementConfigurationSelector就是走这里，调用selectImports方法，然后递归调用
+                             */
+                            String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata()); // 调用selectImports方法
                             Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
+                            // 递归处理processImports
                             processImports(configClass, currentSourceClass, importSourceClasses, false);
                         }
                     }
                     /**
-                     * ImportBeanDefinitionRegistrar：
-                     * 自己发现的两处应用：
-                     *
+                     * 2。ImportBeanDefinitionRegistrar：
+                     * 两处应用：
                      * 1。aop的@EnableAspectJAutoProxy 就导入了@Import(AspectJAutoProxyRegistrar.class)，其中AspectJAutoProxyRegistrar实现了ImportBeanDefinitionRegistrar
                      * 2。mybatis-spring 的@MapperScan注解也是@Import(MapperScannerRegistrar.class)，其中MapperScannerRegistrar实现了ImportBeanDefinitionRegistrar
+                     * 3。事务的ImportSelector的selectImport方法导入的AutoProxyRegistrar也会走这里
                      */
                     else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
                         // Candidate class is an ImportBeanDefinitionRegistrar -> delegate to it to register additional bean definitions
                         Class<?> candidateClass = candidate.loadClass();
-
+                        // 实例化ImportBeanDefinitionRegistrar这个实现类
                         ImportBeanDefinitionRegistrar registrar = BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
+                        /**
+                         * 注意：ImportBeanDefinitionRegistrar的实现类如果实现了Aware接口 那么会先调用aware方法
+                         */
                         ParserStrategyUtils.invokeAwareMethods(registrar, this.environment, this.resourceLoader, this.registry);
-
+                        // 将ImportBeanDefinitionRegistrar先添加到容器 后续使用reader 再调用里面实现的方法
                         configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
                     } else {
                         // Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
                         // process it as an @Configuration class
                         /**
-                         * process it as an @Configuration class
+                         * 3。process it as an @Configuration class
+                         * 一处应用：
+                         * 事务的ProxyTransactionManagementConfiguration就走这里
                          */
                         this.importStack.registerImport(currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
-
+                        // 递归调用
                         processConfigurationClass(candidate.asConfigClass(configClass));
                     }
                 }
@@ -891,7 +939,7 @@ class ConfigurationClassParser {
 
 
     /**
-     *
+     * getImports方法-->selectImports
      */
     private static class DeferredImportSelectorGrouping {
 
