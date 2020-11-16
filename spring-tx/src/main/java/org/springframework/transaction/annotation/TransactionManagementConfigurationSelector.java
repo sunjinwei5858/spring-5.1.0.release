@@ -23,43 +23,51 @@ import org.springframework.transaction.config.TransactionManagementConfigUtils;
 import org.springframework.util.ClassUtils;
 
 /**
+ * 根据@EnableTransactionManagement注解的mode属性 默认为AdviceMode.PROXY，
+ * selectImport方法：返回了AutoProxyRegistrar和ProxyTransactionManagementConfiguration
+ * AutoProxyRegistrar：ImportBeanDefinitionRegistrar
+ * ProxyTransactionManagementConfiguration: 属于配置类 添加了@Configuration注解，使用@Bean注册三个事务最重要的类
+ * <p>
  * Selects which implementation of {@link AbstractTransactionManagementConfiguration}
  * should be used based on the value of {@link EnableTransactionManagement#mode} on the
  * importing {@code @Configuration} class.
  *
  * @author Chris Beams
  * @author Juergen Hoeller
- * @since 3.1
  * @see EnableTransactionManagement
  * @see ProxyTransactionManagementConfiguration
  * @see TransactionManagementConfigUtils#TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME
  * @see TransactionManagementConfigUtils#JTA_TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME
+ * @since 3.1
  */
 public class TransactionManagementConfigurationSelector extends AdviceModeImportSelector<EnableTransactionManagement> {
 
-	/**
-	 * Returns {@link ProxyTransactionManagementConfiguration} or
-	 * {@code AspectJ(Jta)TransactionManagementConfiguration} for {@code PROXY}
-	 * and {@code ASPECTJ} values of {@link EnableTransactionManagement#mode()},
-	 * respectively.
-	 */
-	@Override
-	protected String[] selectImports(AdviceMode adviceMode) {
-		switch (adviceMode) {
-			case PROXY:
-				return new String[] {AutoProxyRegistrar.class.getName(),
-						ProxyTransactionManagementConfiguration.class.getName()};
-			case ASPECTJ:
-				return new String[] {determineTransactionAspectClass()};
-			default:
-				return null;
-		}
-	}
+    /**
+     * TransactionManagementConfigurationSelector子类重写了父类AdviceModeImportSelector的selectImports方法，传入的是AdviceMode参数，属于父类重载
+     * <p>
+     * Returns {@link ProxyTransactionManagementConfiguration} or
+     * {@code AspectJ(Jta)TransactionManagementConfiguration} for {@code PROXY}
+     * and {@code ASPECTJ} values of {@link EnableTransactionManagement#mode()},
+     * respectively.
+     */
+    @Override
+    protected String[] selectImports(AdviceMode adviceMode) {
+        switch (adviceMode) {
+            case PROXY:
+                System.out.println("TransactionManagementConfigurationSelector selectImports 方法开始。。。。。。");
+                return new String[]{AutoProxyRegistrar.class.getName(),
+                        ProxyTransactionManagementConfiguration.class.getName()};
+            case ASPECTJ:
+                return new String[]{determineTransactionAspectClass()};
+            default:
+                return null;
+        }
+    }
 
-	private String determineTransactionAspectClass() {
-		return (ClassUtils.isPresent("javax.transaction.Transactional", getClass().getClassLoader()) ?
-				TransactionManagementConfigUtils.JTA_TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME :
-				TransactionManagementConfigUtils.TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME);
-	}
+    private String determineTransactionAspectClass() {
+        return (ClassUtils.isPresent("javax.transaction.Transactional", getClass().getClassLoader()) ?
+                TransactionManagementConfigUtils.JTA_TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME :
+                TransactionManagementConfigUtils.TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME);
+    }
 
 }
