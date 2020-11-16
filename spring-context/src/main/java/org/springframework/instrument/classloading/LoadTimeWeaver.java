@@ -27,37 +27,40 @@ import java.lang.instrument.ClassFileTransformer;
  *
  * @author Rod Johnson
  * @author Costin Leau
- * @since 2.0
  * @see java.lang.instrument.ClassFileTransformer
+ * @since 2.0
  */
 public interface LoadTimeWeaver {
 
-	/**
-	 * Add a {@code ClassFileTransformer} to be applied by this
-	 * {@code LoadTimeWeaver}.
-	 * @param transformer the {@code ClassFileTransformer} to add
-	 */
-	void addTransformer(ClassFileTransformer transformer);
+    /**
+     * Add a {@code ClassFileTransformer} to be applied by this
+     * {@code LoadTimeWeaver}.
+     *
+     * @param transformer the {@code ClassFileTransformer} to add
+     */
+    void addTransformer(ClassFileTransformer transformer);
 
-	/**
-	 * Return a {@code ClassLoader} that supports instrumentation
-	 * through AspectJ-style load-time weaving based on user-defined
-	 * {@link ClassFileTransformer ClassFileTransformers}.
-	 * <p>May be the current {@code ClassLoader}, or a {@code ClassLoader}
-	 * created by this {@link LoadTimeWeaver} instance.
-	 * @return the {@code ClassLoader} which will expose
-	 * instrumented classes according to the registered transformers
-	 */
-	ClassLoader getInstrumentableClassLoader();
+    /**
+     * Return a {@code ClassLoader} that supports instrumentation
+     * through AspectJ-style load-time weaving based on user-defined
+     * {@link ClassFileTransformer ClassFileTransformers}.
+     * <p>May be the current {@code ClassLoader}, or a {@code ClassLoader}
+     * created by this {@link LoadTimeWeaver} instance.
+     *
+     * @return the {@code ClassLoader} which will expose
+     * instrumented classes according to the registered transformers
+     */
+    ClassLoader getInstrumentableClassLoader();
 
-	/**
-	 * Return a throwaway {@code ClassLoader}, enabling classes to be
-	 * loaded and inspected without affecting the parent {@code ClassLoader}.
-	 * <p>Should <i>not</i> return the same instance of the {@link ClassLoader}
-	 * returned from an invocation of {@link #getInstrumentableClassLoader()}.
-	 * @return a temporary throwaway {@code ClassLoader}; should return
-	 * a new instance for each call, with no existing state
-	 */
-	ClassLoader getThrowawayClassLoader();
+    /**
+     * Return a throwaway {@code ClassLoader}, enabling classes to be
+     * loaded and inspected without affecting the parent {@code ClassLoader}.
+     * <p>Should <i>not</i> return the same instance of the {@link ClassLoader}
+     * returned from an invocation of {@link #getInstrumentableClassLoader()}.
+     *
+     * @return a temporary throwaway {@code ClassLoader}; should return
+     * a new instance for each call, with no existing state
+     */
+    ClassLoader getThrowawayClassLoader();
 
 }
