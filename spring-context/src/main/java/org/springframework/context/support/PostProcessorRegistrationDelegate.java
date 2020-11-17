@@ -160,6 +160,8 @@ final class PostProcessorRegistrationDelegate {
             // Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.
             /**
              * 1.3【不需要控制顺序的BeanDefinitionRegistryPostProcessor】
+             * 目前知道的一个扩展：mybatis-spring的MapperScannerConfigurer实现了BeanDefinitionRegistryPostProcessor后置处理器接口
+             * 该后置处理器没有实现Order或者PrioryOrder接口，就在此处进行invoke方法，将mapper的bean定义注册到spring容器
              */
             boolean reiterate = true;
             while (reiterate) {
