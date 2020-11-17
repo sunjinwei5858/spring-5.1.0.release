@@ -143,10 +143,14 @@ class ConfigurationClassBeanDefinitionReader {
         for (BeanMethod beanMethod : configClass.getBeanMethods()) {
             loadBeanDefinitionsForBeanMethod(beanMethod);
         }
+
+        /**
+         * 3.处理@ImportResources
+         */
         loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
 
         /**
-         * 3。处理实现了ImportBeanDefinitionRegistrar接口，调用registerBeanDefinitions()方法注册bean定义
+         * 4。处理实现了ImportBeanDefinitionRegistrar接口，调用registerBeanDefinitions()方法注册bean定义
          * 比如：
          * aop中的执行AspectJAutoProxyRegistrar的registerBeanDefinitions()方法，将aop代理的后置处理器AnnotationAwareAspectJAutoProxyCreator注册到容器
          */
