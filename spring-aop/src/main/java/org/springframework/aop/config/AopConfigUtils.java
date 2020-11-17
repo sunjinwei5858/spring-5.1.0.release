@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * aop前置工作的工具类 比如注册aop的后置处理器，如果@EnableAspectJAutoProxy 配置了属性
+ *
+ *
  * Utility class for handling registration of AOP auto-proxy creators.
  *
  * <p>Only a single auto-proxy creator should be registered yet multiple concrete
@@ -69,6 +72,13 @@ public abstract class AopConfigUtils {
         return registerAutoProxyCreatorIfNecessary(registry, null);
     }
 
+    /**
+     * 注册的是：InfrastructureAdvisorAutoProxyCreator--spring的事务
+     *
+     * @param registry
+     * @param source
+     * @return
+     */
     @Nullable
     public static BeanDefinition registerAutoProxyCreatorIfNecessary(
             BeanDefinitionRegistry registry, @Nullable Object source) {
@@ -81,6 +91,13 @@ public abstract class AopConfigUtils {
         return registerAspectJAutoProxyCreatorIfNecessary(registry, null);
     }
 
+    /**
+     * 注册的是：AspectJAwareAdvisorAutoProxyCreator--spring的aop
+     *
+     * @param registry
+     * @param source
+     * @return
+     */
     @Nullable
     public static BeanDefinition registerAspectJAutoProxyCreatorIfNecessary(
             BeanDefinitionRegistry registry, @Nullable Object source) {
@@ -89,7 +106,7 @@ public abstract class AopConfigUtils {
     }
 
     /**
-     * 使用@EnableAspectJAutoProxy 开启aop 然后注册AnnotationAwareAspectJAutoProxyCreator aop的beanpost后置处理器
+     * 使用@EnableAspectJAutoProxy 开启aop 然后注册AnnotationAwareAspectJAutoProxyCreator aop的beanPost后置处理器
      *
      * @param registry
      * @return
@@ -132,8 +149,8 @@ public abstract class AopConfigUtils {
     }
 
     /**
-     * 注册或者升级（escalate）AnnotationAwareAspectJAutoProxyCreator
-     *
+     * aop：注册或者升级（escalate）AnnotationAwareAspectJAutoProxyCreator
+     * tx: 注册或者升级（escalate）InfrastructureAdvisorAutoProxyCreator
      * @param cls
      * @param registry
      * @param source
@@ -167,6 +184,7 @@ public abstract class AopConfigUtils {
         beanDefinition.setSource(source);
         beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        // 注册aop的AnnotationAwareAspectJAutoProxyCreator这个beanpost后置处理器
         registry.registerBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME, beanDefinition);
         return beanDefinition;
     }
