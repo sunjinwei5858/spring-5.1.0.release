@@ -19,6 +19,9 @@ package org.aopalliance.intercept;
 import org.aopalliance.aop.Advice;
 
 /**
+ * spring aop 的拦截器根接口，其中MethodInterceptor就是
+ *
+ *
  * This interface represents a generic interceptor.
  *
  * <p>A generic interceptor can intercept runtime events that occur

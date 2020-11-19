@@ -17,6 +17,9 @@
 package org.aopalliance.intercept;
 
 /**
+ * spring aop和事务的拦截器，advice都实现了MethodInterceptor
+ *
+ *
  * Intercepts calls on an interface on its way to the target. These
  * are nested "on top" of the target.
  *
@@ -42,16 +45,17 @@ package org.aopalliance.intercept;
 @FunctionalInterface
 public interface MethodInterceptor extends Interceptor {
 
-	/**
-	 * Implement this method to perform extra treatments before and
-	 * after the invocation. Polite implementations would certainly
-	 * like to invoke {@link Joinpoint#proceed()}.
-	 * @param invocation the method invocation joinpoint
-	 * @return the result of the call to {@link Joinpoint#proceed()};
-	 * might be intercepted by the interceptor
-	 * @throws Throwable if the interceptors or the target object
-	 * throws an exception
-	 */
-	Object invoke(MethodInvocation invocation) throws Throwable;
+    /**
+     * Implement this method to perform extra treatments before and
+     * after the invocation. Polite implementations would certainly
+     * like to invoke {@link Joinpoint#proceed()}.
+     *
+     * @param invocation the method invocation joinpoint
+     * @return the result of the call to {@link Joinpoint#proceed()};
+     * might be intercepted by the interceptor
+     * @throws Throwable if the interceptors or the target object
+     *                   throws an exception
+     */
+    Object invoke(MethodInvocation invocation) throws Throwable;
 
 }
