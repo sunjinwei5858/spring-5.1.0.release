@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * !!!!
- * 该后置处理器支持的注解是@Autowired @Value
+ * 该后置处理器支持的注解是@Autowired @Value，完成属性注入的后置处理器 inject
  * <p>
  * <p>
  * <p>

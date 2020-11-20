@@ -1403,6 +1403,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     /**
+     * bean的第二阶段 属性注入 populateBean, 注入前调用后置处理器判断能不能注入，使用后置处理器完成inject注入，
+     *
      * Populate the bean instance in the given BeanWrapper with the property values
      * from the bean definition.
      *
@@ -1433,6 +1435,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         /**
          * Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
          * 根据作者的注释可以得出：InstantiationAwareBeanPostProcessor 这个BeanPostProcessor后置处理器的功能多么强大！！！
+         * 其实就是AutowiredAnnotationBeanPostProcessor 完成属性注入
          */
         if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
             for (BeanPostProcessor bp : getBeanPostProcessors()) {
@@ -1489,6 +1492,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                  */
                 if (bp instanceof InstantiationAwareBeanPostProcessor) {
                     InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+                    /**
+                     * InstantiationAwareBeanPostProcessor实现这个接口的后置处理器完成属性注入，其实就是AutowiredAnnotationBeanPostProcessor
+                     */
                     PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
                     if (pvsToUse == null) {
                         if (filteredPds == null) {
