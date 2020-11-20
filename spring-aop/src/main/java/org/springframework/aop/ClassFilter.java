@@ -17,6 +17,9 @@
 package org.springframework.aop;
 
 /**
+ * AspectJ表达式的 对类进行匹配match
+ *
+ *
  * Filter that restricts matching of a pointcut or introduction to
  * a given set of target classes.
  *
@@ -30,17 +33,18 @@ package org.springframework.aop;
 @FunctionalInterface
 public interface ClassFilter {
 
-	/**
-	 * Should the pointcut apply to the given interface or target class?
-	 * @param clazz the candidate target class
-	 * @return whether the advice should apply to the given target class
-	 */
-	boolean matches(Class<?> clazz);
+    /**
+     * Should the pointcut apply to the given interface or target class?
+     *
+     * @param clazz the candidate target class
+     * @return whether the advice should apply to the given target class
+     */
+    boolean matches(Class<?> clazz);
 
 
-	/**
-	 * Canonical instance of a ClassFilter that matches all classes.
-	 */
-	ClassFilter TRUE = TrueClassFilter.INSTANCE;
+    /**
+     * Canonical instance of a ClassFilter that matches all classes.
+     */
+    ClassFilter TRUE = TrueClassFilter.INSTANCE;
 
 }

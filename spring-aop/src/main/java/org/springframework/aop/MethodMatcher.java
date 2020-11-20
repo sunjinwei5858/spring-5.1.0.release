@@ -19,6 +19,12 @@ package org.springframework.aop;
 import java.lang.reflect.Method;
 
 /**
+ * AspctJ表达式对method方法进行匹配 match
+ *
+ * 两个参数的matches是用于静态的方法匹配
+ * 三个参数的matches是在运行期动态的进行方法匹配的
+ *
+ *
  * Part of a {@link Pointcut}: Checks whether the target method is eligible for advice.
  *
  * <p>A MethodMatcher may be evaluated <b>statically</b> or at <b>runtime</b> (dynamically).
@@ -41,56 +47,62 @@ import java.lang.reflect.Method;
  * parameters or ThreadLocal state will be available at the time of evaluation.
  *
  * @author Rod Johnson
- * @since 11.11.2003
  * @see Pointcut
  * @see ClassFilter
+ * @since 11.11.2003
  */
 public interface MethodMatcher {
 
-	/**
-	 * Perform static checking whether the given method matches.
-	 * <p>If this returns {@code false} or if the {@link #isRuntime()}
-	 * method returns {@code false}, no runtime check (i.e. no
-	 * {@link #matches(java.lang.reflect.Method, Class, Object[])} call)
-	 * will be made.
-	 * @param method the candidate method
-	 * @param targetClass the target class
-	 * @return whether or not this method matches statically
-	 */
-	boolean matches(Method method, Class<?> targetClass);
+    /**
+     * Perform static checking whether the given method matches.
+     * <p>If this returns {@code false} or if the {@link #isRuntime()}
+     * method returns {@code false}, no runtime check (i.e. no
+     * {@link #matches(java.lang.reflect.Method, Class, Object[])} call)
+     * will be made.
+     *
+     * @param method      the candidate method
+     * @param targetClass the target class
+     * @return whether or not this method matches statically
+     */
+    boolean matches(Method method, Class<?> targetClass);
 
-	/**
-	 * Is this MethodMatcher dynamic, that is, must a final call be made on the
-	 * {@link #matches(java.lang.reflect.Method, Class, Object[])} method at
-	 * runtime even if the 2-arg matches method returns {@code true}?
-	 * <p>Can be invoked when an AOP proxy is created, and need not be invoked
-	 * again before each method invocation,
-	 * @return whether or not a runtime match via the 3-arg
-	 * {@link #matches(java.lang.reflect.Method, Class, Object[])} method
-	 * is required if static matching passed
-	 */
-	boolean isRuntime();
+    /**
+     * Is this MethodMatcher dynamic, that is, must a final call be made on the
+     * {@link #matches(java.lang.reflect.Method, Class, Object[])} method at
+     * runtime even if the 2-arg matches method returns {@code true}?
+     * <p>Can be invoked when an AOP proxy is created, and need not be invoked
+     * again before each method invocation,
+     *
+     * @return whether or not a runtime match via the 3-arg
+     * {@link #matches(java.lang.reflect.Method, Class, Object[])} method
+     * is required if static matching passed
+     */
+    boolean isRuntime();
 
-	/**
-	 * Check whether there a runtime (dynamic) match for this method,
-	 * which must have matched statically.
-	 * <p>This method is invoked only if the 2-arg matches method returns
-	 * {@code true} for the given method and target class, and if the
-	 * {@link #isRuntime()} method returns {@code true}. Invoked
-	 * immediately before potential running of the advice, after any
-	 * advice earlier in the advice chain has run.
-	 * @param method the candidate method
-	 * @param targetClass the target class
-	 * @param args arguments to the method
-	 * @return whether there's a runtime match
-	 * @see MethodMatcher#matches(Method, Class)
-	 */
-	boolean matches(Method method, Class<?> targetClass, Object... args);
+    /**
+     * 运行时 动态匹配
+     *
+     *
+     * Check whether there a runtime (dynamic) match for this method,
+     * which must have matched statically.
+     * <p>This method is invoked only if the 2-arg matches method returns
+     * {@code true} for the given method and target class, and if the
+     * {@link #isRuntime()} method returns {@code true}. Invoked
+     * immediately before potential running of the advice, after any
+     * advice earlier in the advice chain has run.
+     *
+     * @param method      the candidate method
+     * @param targetClass the target class
+     * @param args        arguments to the method
+     * @return whether there's a runtime match
+     * @see MethodMatcher#matches(Method, Class)
+     */
+    boolean matches(Method method, Class<?> targetClass, Object... args);
 
 
-	/**
-	 * Canonical instance that matches all methods.
-	 */
-	MethodMatcher TRUE = TrueMethodMatcher.INSTANCE;
+    /**
+     * Canonical instance that matches all methods.
+     */
+    MethodMatcher TRUE = TrueMethodMatcher.INSTANCE;
 
 }
