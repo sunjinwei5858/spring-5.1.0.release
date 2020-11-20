@@ -123,12 +123,19 @@ import java.lang.annotation.Target;
 public @interface EnableAspectJAutoProxy {
 
     /**
+     * 属性1 ：
+     * 默认为false 也就是默认为jdk动态代理，必须要有接口
+     * 设置为true 强制使用cglib代理 底层依靠ASM操作字节码实现，性能比jdk强
      * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
      * to standard Java interface-based proxies. The default is {@code false}.
      */
     boolean proxyTargetClass() default false;
 
     /**
+     * 属性2
+     * false：目标对象的自我调用无法实现增强，比如在目标类中使用 this 是无法增强的，因为this指向目标对象，需要指向代理对象才能实现增强
+     * 设置true：会将代理对象存储到AopContext的ThreadLocal中，那么可以使用 ((A)AopContext.currentProxy()).method() 就会进行增强了
+     *
      * Indicate that the proxy should be exposed by the AOP framework as a {@code ThreadLocal}
      * for retrieval via the {@link org.springframework.aop.framework.AopContext} class.
      * Off by default, i.e. no guarantees that {@code AopContext} access will work.
