@@ -50,6 +50,8 @@ import java.beans.PropertyDescriptor;
 public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 
     /**
+     * doCreateBean 之前调用，传入的是beanClass
+     *
      * 这个方法可以提前创建bean，功能非常强大
      * 因为入参传入的是beanClass，所以很多实现类 比如aop 事务 都实现了该接口，可以进行扩展
      * <p>
@@ -102,6 +104,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
     }
 
     /**
+     * bean的第二阶段populateBean：属性注入
      * 属性注入就是在这里进行完成!!!
      * <p>
      * Post-process the given property values before the factory applies them
