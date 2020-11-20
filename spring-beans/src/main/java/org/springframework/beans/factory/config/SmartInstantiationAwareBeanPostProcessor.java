@@ -71,7 +71,12 @@ public interface SmartInstantiationAwareBeanPostProcessor extends InstantiationA
     }
 
     /**
-     * !!!!
+     * 如果开启了aop，
+     * 存在循环依赖时： A有B属性 B有A属性 ，
+     * 先初始化A时 发现有B属性，那么就去实例化B，实例化B时，发现有A属性要注入，此时就发生了循环依赖，
+     * 因为初始化A时 无参构造就已经把A加入三级缓存了，
+     * 如果开启了aop，getEarlyBeanReference获取A的引用时就会调用SmartInstantiationAwareBeanPostProcessor这个后置处理器需要处理一下，生成代理
+     *
      * 该英文注释说明了 该方法是用于解决循环依赖，该方法的意义就是可以将早期对象进行修改，进行扩展。
      * 比如aop，就可以在此处进行偷梁换柱
      * <p>
