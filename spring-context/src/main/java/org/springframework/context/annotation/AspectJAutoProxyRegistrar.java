@@ -49,7 +49,7 @@ class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
             AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
         /**
-         * 1。这里将aop代理的后置处理器AnnotationAwareAspectJAutoProxyCreator的bean定义注册到容器
+         * 1。这里将aop代理的后置处理器AnnotationAwareAspectJAutoProxyCreator的bean定义注册到容器 【注册bean定义】
          */
         AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry);
 
@@ -57,7 +57,7 @@ class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
                 importingClassMetadata, EnableAspectJAutoProxy.class);
 
         /**
-         * 2。处理 Proxy-target-class 以及 expose-proxy 属性
+         * 2。处理 Proxy-target-class 以及 expose-proxy 属性 【对bean定义增加两个属性proxyTargetClass，exposeProxy】
          */
         if (enableAspectJAutoProxy != null) {
             if (enableAspectJAutoProxy.getBoolean("proxyTargetClass")) {

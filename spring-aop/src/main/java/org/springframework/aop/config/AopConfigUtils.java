@@ -31,8 +31,8 @@ import java.util.List;
 
 /**
  * aop前置工作的工具类 比如注册aop的后置处理器，如果@EnableAspectJAutoProxy 配置了属性
- *
- *
+ * <p>
+ * <p>
  * Utility class for handling registration of AOP auto-proxy creators.
  *
  * <p>Only a single auto-proxy creator should be registered yet multiple concrete
@@ -134,6 +134,11 @@ public abstract class AopConfigUtils {
         return registerOrEscalateApcAsRequired(AnnotationAwareAspectJAutoProxyCreator.class, registry, source);
     }
 
+    /**
+     * 对bean定义设置两个属性 proxyTargetClass
+     *
+     * @param registry
+     */
     public static void forceAutoProxyCreatorToUseClassProxying(BeanDefinitionRegistry registry) {
         if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
             BeanDefinition definition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);
@@ -141,6 +146,11 @@ public abstract class AopConfigUtils {
         }
     }
 
+    /**
+     * 对bean定义设置属性 exposeProxy
+     *
+     * @param registry
+     */
     public static void forceAutoProxyCreatorToExposeProxy(BeanDefinitionRegistry registry) {
         if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
             BeanDefinition definition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);
@@ -151,6 +161,7 @@ public abstract class AopConfigUtils {
     /**
      * aop：注册或者升级（escalate）AnnotationAwareAspectJAutoProxyCreator
      * tx: 注册或者升级（escalate）InfrastructureAdvisorAutoProxyCreator
+     *
      * @param cls
      * @param registry
      * @param source
