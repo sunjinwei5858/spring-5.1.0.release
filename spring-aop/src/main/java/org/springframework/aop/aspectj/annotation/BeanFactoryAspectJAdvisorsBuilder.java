@@ -78,6 +78,13 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 
 
     /**
+     * 解析aop切面的方法: BeanFactoryAspectJAdvisorsBuilder#buildAspectJAdvisors()
+     * 解析事务的方法: BeanFactoryAdvisorRetrievalHelper#findAdvisorBeans()
+     *
+     *  1。获取所有的beanName
+     *  2。遍历所有的beanName 找出声明了@AspectJ注解的类
+     *  3。对标记为@AspectJ注解的类进行增强器的获取【这里是最重要的】
+     *  4。将提取结果加入缓存
      * Look for AspectJ-annotated aspect beans in the current bean factory,
      * and return to a list of Spring AOP Advisors representing them.
      * <p>Creates a Spring Advisor for each AspectJ advice method.
@@ -94,7 +101,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
          */
         if (aspectNames == null) {
             /**
-             * 做了dcl检查 双重判断
+             * 做了dcl检查 双重判断，联想到单例模式 也使用双重判断的方法 即dcl
              */
             synchronized (this) {
                 aspectNames = this.aspectBeanNames;
@@ -108,6 +115,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
                      */
                     aspectNames = new ArrayList<>();
                     /**
+                     * 1.
                      * aop功能在这里传入的是Object.class!!!!，代表去容器中获取所有组件的名称，然后再经过一一遍历。
                      * 这个过程是十分耗性能的，所以说spring在这里加入了保存切面信息的缓存。
                      *
@@ -133,6 +141,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
                             continue;
                         }
                         /**
+                         * 2.
                          * !!!根据class对象判断是不是切面 是否加了@Aspect注解
                          */
                         if (this.advisorFactory.isAspect(beanType)) {
@@ -150,14 +159,13 @@ public class BeanFactoryAspectJAdvisorsBuilder {
                                 /**
                                  * 构建切面注解的实例工厂
                                  */
-                                MetadataAwareAspectInstanceFactory factory =
-                                        new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+                                MetadataAwareAspectInstanceFactory factory = new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
                                 /**
-                                 * 根据工厂将四个通知都获取到
+                                 * 3.对标记为@AspectJ注解的类进行增强器的获取 这个步骤是最重要的 获取增强器 解析标记@AspectJ注解中的增强方法
                                  */
                                 List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
                                 /**
-                                 * 加入到缓存中
+                                 * 4.加入到缓存中
                                  */
                                 if (this.beanFactory.isSingleton(beanName)) {
                                     this.advisorsCache.put(beanName, classAdvisors);
