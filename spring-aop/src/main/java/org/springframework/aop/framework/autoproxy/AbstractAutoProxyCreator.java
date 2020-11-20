@@ -45,7 +45,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 该英文注释已经说明了aop代理对象是在此处实现的，aop的逻辑分析也是在这个类开始，因为该类在bean的实例化前后实现before和after的后置处理器
+ * 该英文注释已经说明了aop代理对象是在此处实现的，aop的逻辑分析也是在这个类开始，
+ * 因为该类在bean的实例化前后实现了后置处理器before【第一阶段 实例化前】和after【第三阶段 初始化后】的方法
  * before方法：进行aop的解析和缓存，为什么要缓存 因为解析的工作量很大，提高性能
  * after方法：生成代理对象
  * <p>
@@ -141,6 +142,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     private final Set<String> targetSourcedBeans = Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
     /**
+     * earlyProxyReferences集合的作用：
+     * 1。getEarlyBeanReference：进行add
+     * 2。postProcessAfterInitialization：进行get操作
      *
      */
     private final Set<Object> earlyProxyReferences = Collections.newSetFromMap(new ConcurrentHashMap<>(16));
@@ -246,8 +250,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     }
 
     /**
-     * 这里进行生成代理对象！！！ 这就是singltonFactories缓存为什么存储是ObjectFactory的原因，而不是直接是bean
-     * 这里可以进行偷梁换柱！！！
+     * 如果开启了aop，并且有循环依赖，A有B，B有A。实例化A，发现有B，实例化B，发现有A，那么此时就会从三级缓存中获取到A的对象工厂，getEarlyBeanReference
+     * 如果A需要代理，doGetBean方法中调用getSingleton(beanName),就会去三级缓存中get，调用lambda表达式getEarlyBeanReference，
      *
      * @param bean     the raw bean instance
      * @param beanName the name of the bean
@@ -269,7 +273,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     }
 
     /**
-     * 第一阶段 实例化前：
+     * 第一阶段 实例化前：【解析切面以及事务解析 事务注解都是在这里完成的】
      * postProcessBeforeInstantiation --- Instantiation 实例化前进行的逻辑：
      * 入参是Class<?> beanClass
      * <p>
@@ -317,7 +321,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
                 this.targetSourcedBeans.add(beanName);
             }
             /**
-             *
+             * 如果有自定义的目标 那么在这里找到增强器
              */
             Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, targetSource);
 
@@ -349,7 +353,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
     /**
      * 第三阶段 初始化后
-     * postProcessAfterInitialization--Initialization--初始化后【第三阶段】进行生成代理
+     * postProcessAfterInitialization--Initialization--初始化后【第三阶段】进行生成代理对象，
+     * 如何生成aop代理对象的逻辑全部封装在wrapIfNecessary方法中
      *
      * <p>
      * Create a proxy with the configured interceptors if the bean is
@@ -366,7 +371,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
              */
             if (!this.earlyProxyReferences.contains(cacheKey)) {
                 /**
-                 * 找到合适的 就会生成代理
+                 * 找到合适的 就会生成代理。这里进行偷天换日
                  */
                 return wrapIfNecessary(bean, beanName, cacheKey);
             }
@@ -397,7 +402,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
     }
 
     /**
-     * 此处进行生成代理对象 偷梁换柱！！！
+     * 此处进行生成代理对象 偷梁换柱，创建aop代理：
+     * 1。获取增强器
+     * 2。寻找匹配的增强器
+     * 3。创建代理
      * <p>
      * Wrap the given bean if necessary, i.e. if it is eligible for being proxied.
      *
@@ -415,14 +423,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
         }
 
         /**
-         * 不需要增强的
+         * 不需要增强的【true代表需要代理 false代表不需要被代理】
          */
         if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
             return bean;
         }
 
         /**
-         * 是不是基础的bean 是不是需要跳过
+         * 基础设施类不需要处理或者配置了指定bean不需要自动代理
          */
         if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
             this.advisedBeans.put(cacheKey, Boolean.FALSE);
@@ -431,18 +439,24 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
         // Create proxy if we have advice.
         /**
-         * 如果有通知的话 就创建代理对象
+         * 如果存在增强方法则创建代理：getAdvicesAndAdvisorsForBean就是真正创建代理的方法，交给子类去实现的，这就是扩展，父类定义的足够高，子类可以尽情扩展
+         *
+         * 如果有通知的话 就创建代理对象。获取对应的advise,不但要找出增强器，还需要判断增强器是否满足要求。
+         * 1。找出增强器
+         * 2。寻找匹配的增强器【是否在切点配置的通配符中】
+         * 3。创建代理createProxy
          */
         Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
         if (specificInterceptors != DO_NOT_PROXY) {
             this.advisedBeans.put(cacheKey, Boolean.TRUE);
             // 创建代理
-            Object proxy = createProxy(
-                    bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
+            Object proxy = createProxy(bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
             this.proxyTypes.put(cacheKey, proxy.getClass());
             return proxy;
         }
-
+        /**
+         * 走到这里 说明该类不需要被代理 那么设置为false
+         */
         this.advisedBeans.put(cacheKey, Boolean.FALSE);
         return bean;
     }
@@ -552,6 +566,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
         }
 
         Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+
         proxyFactory.addAdvisors(advisors);
         proxyFactory.setTargetSource(targetSource);
         customizeProxyFactory(proxyFactory);
@@ -627,6 +642,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
         Advisor[] advisors = new Advisor[allInterceptors.size()];
         for (int i = 0; i < allInterceptors.size(); i++) {
+
             advisors[i] = this.advisorAdapterRegistry.wrap(allInterceptors.get(i));
         }
         return advisors;
