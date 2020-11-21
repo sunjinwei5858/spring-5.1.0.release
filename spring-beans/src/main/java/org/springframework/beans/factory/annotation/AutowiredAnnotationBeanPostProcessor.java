@@ -48,8 +48,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * !!!!
- * 该后置处理器支持的注解是@Autowired @Value，完成属性注入的后置处理器 inject
+ * 完成bean的第二阶段：属性注入的后置处理器
+ * 支持注入的方式是注解@Autowired @Value，完成属性注入的后置处理器
  * <p>
  * <p>
  * <p>

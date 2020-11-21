@@ -23,8 +23,9 @@ import org.springframework.lang.Nullable;
 import java.beans.PropertyDescriptor;
 
 /**
- * 这个接口重载的postProcessBeforeInstantiation()方法很强大，可以提前创建bean，
- * 因为该方法的入参为 beanClass
+ * 这个接口重载的postProcessBeforeInstantiation()方法很强大，
+ * 1。可以提前创建bean，因为该方法的入参为 beanClass
+ * 2。可以属性注入postProcessProperties
  * <p>
  * Subinterface of {@link BeanPostProcessor} that adds a before-instantiation callback,
  * and a callback after instantiation but before explicit properties are set or
@@ -51,7 +52,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 
     /**
      * doCreateBean 之前调用，传入的是beanClass
-     *
+     * <p>
      * 这个方法可以提前创建bean，功能非常强大
      * 因为入参传入的是beanClass，所以很多实现类 比如aop 事务 都实现了该接口，可以进行扩展
      * <p>
