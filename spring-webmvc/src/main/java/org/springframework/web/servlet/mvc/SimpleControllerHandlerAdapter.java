@@ -16,14 +16,17 @@
 
 package org.springframework.web.servlet.mvc;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerAdapter;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
+ * spring-webmvc初始化了三个处理器适配器：
+ * SimpleControllerHandlerAdapter，HttpRequestHandlerAdapter，RequestMappingHandlerAdapter
+ * <p>
  * Adapter to use the plain {@link Controller} workflow interface with
  * the generic {@link org.springframework.web.servlet.DispatcherServlet}.
  * Supports handlers that implement the {@link LastModified} interface.
@@ -39,25 +42,36 @@ import org.springframework.web.servlet.ModelAndView;
  */
 public class SimpleControllerHandlerAdapter implements HandlerAdapter {
 
-	@Override
-	public boolean supports(Object handler) {
-		return (handler instanceof Controller);
-	}
+    @Override
+    public boolean supports(Object handler) {
+        return (handler instanceof Controller);
+    }
 
-	@Override
-	@Nullable
-	public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler)
-			throws Exception {
+    /**
+     * 执行目标方法
+     *
+     * @param request  current HTTP request
+     * @param response current HTTP response
+     * @param handler  handler to use. This object must have previously been passed
+     *                 to the {@code supports} method of this interface, which must have
+     *                 returned {@code true}.
+     * @return
+     * @throws Exception
+     */
+    @Override
+    @Nullable
+    public ModelAndView handle(HttpServletRequest request, HttpServletResponse response, Object handler)
+            throws Exception {
 
-		return ((Controller) handler).handleRequest(request, response);
-	}
+        return ((Controller) handler).handleRequest(request, response);
+    }
 
-	@Override
-	public long getLastModified(HttpServletRequest request, Object handler) {
-		if (handler instanceof LastModified) {
-			return ((LastModified) handler).getLastModified(request);
-		}
-		return -1L;
-	}
+    @Override
+    public long getLastModified(HttpServletRequest request, Object handler) {
+        if (handler instanceof LastModified) {
+            return ((LastModified) handler).getLastModified(request);
+        }
+        return -1L;
+    }
 
 }
