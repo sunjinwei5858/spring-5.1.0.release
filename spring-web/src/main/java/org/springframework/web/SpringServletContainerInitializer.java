@@ -31,6 +31,9 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 /**
+ * servlet3.0之后 spring通过spi机制引入SpringServletContainerInitializer实现servlet提供的ServletContainerInitializer，
+ * 然后调用onStartup方法来进行初始化spring的父web容器
+ *
  * Servlet 3.0 {@link ServletContainerInitializer} designed to support code-based
  * configuration of the servlet container using Spring's {@link WebApplicationInitializer}
  * SPI as opposed to (or possibly in combination with) the traditional
@@ -148,9 +151,7 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
     @Override
     public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
             throws ServletException {
-
         List<WebApplicationInitializer> initializers = new LinkedList<>();
-
         if (webAppInitializerClasses != null) {
             for (Class<?> waiClass : webAppInitializerClasses) {
                 // Be defensive: Some servlet containers provide us with invalid classes,
@@ -161,8 +162,8 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
                         /**
                          * 反射创建WebApplicationInitializer接口的实现类
                          */
-                        WebApplicationInitializer newInstance = (WebApplicationInitializer) ReflectionUtils.accessibleConstructor(waiClass).newInstance();
-
+                        WebApplicationInitializer newInstance =
+                                (WebApplicationInitializer) ReflectionUtils.accessibleConstructor(waiClass).newInstance();
                         /**
                          * 添加实现类到集合
                          */
@@ -173,18 +174,15 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
                 }
             }
         }
-
         if (initializers.isEmpty()) {
             servletContext.log("No Spring WebApplicationInitializer types detected on classpath");
             return;
         }
-
         servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
         /**
          * 对实现类进行排序
          */
         AnnotationAwareOrderComparator.sort(initializers);
-
         /**
          * 遍历实现类集合，并调用实现类的onStartup方法，这里可以进行注册三大组件 filter listener dispatchservlet
          */
