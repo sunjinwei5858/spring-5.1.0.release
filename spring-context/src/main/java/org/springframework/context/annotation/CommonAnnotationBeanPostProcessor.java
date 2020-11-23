@@ -57,8 +57,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * !!!
  * 该英文注释说明了 该后置处理器支持的是使用java jdk自带的注解
  * 比如@PostConstruct @PreDestroy @Resource 使用CommonAnnotationBeanPostProcessor这个后置处理器进行处理
- * <p>
- * <p>
+ *
+ * 同时这也是完成属性注入的第二个后置处理器，因为属性注入也可以使用@Resource 注解
  * <p>
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that supports common Java annotations out of the box, in particular the JSR-250

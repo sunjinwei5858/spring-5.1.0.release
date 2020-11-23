@@ -106,7 +106,10 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 
     /**
      * bean的第二阶段populateBean：属性注入
-     * 属性注入就是在这里进行完成!!!
+     * 属性注入就是在这里进行完成!!! 可以进行属性注入有好多个后置处理器，比如
+     * 使用jdk自带的注解 @resource : CommonAnnotationBeanPostProcessor
+     * 使用spring的注解 @Autowire : AutowiredAnnotationBeanPostProcessor
+     * jpa  @PersistenceUnit ：PersistenceAnnotationBeanPostProcessor
      * <p>
      * Post-process the given property values before the factory applies them
      * to the given bean, without any need for property descriptors.

@@ -48,10 +48,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 完成bean的第二阶段：属性注入的后置处理器
- * 支持注入的方式是注解@Autowired @Value，完成属性注入的后置处理器
- * <p>
- * <p>
+ * 完成bean的第二阶段：属性注入的后置处理器其中之一
+ * 支持注入的方式是注解@Autowired @Value
  * <p>
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that autowires annotated fields, setter methods and arbitrary config methods.

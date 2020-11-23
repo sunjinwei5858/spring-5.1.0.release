@@ -328,6 +328,13 @@ public class PersistenceAnnotationBeanPostProcessor
         return true;
     }
 
+    /**
+     * 属性注入 jpa
+     * @param pvs      the property values that the factory is about to apply (never {@code null})
+     * @param bean     the bean instance created, but whose properties have not yet been set
+     * @param beanName the name of the bean
+     * @return
+     */
     @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
         InjectionMetadata metadata = findPersistenceMetadata(beanName, bean.getClass(), pvs);
