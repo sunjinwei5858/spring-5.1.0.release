@@ -16,25 +16,22 @@
 
 package org.springframework.context.support;
 
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.Aware;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.EmbeddedValueResolver;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.EmbeddedValueResolverAware;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.context.MessageSourceAware;
-import org.springframework.context.ResourceLoaderAware;
+import org.springframework.context.*;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 /**
+ * 调用aware接口方法的后置处理器，一般aware接口 都是进行setXXX
+ * <p>
+ * <p>
  * {@link org.springframework.beans.factory.config.BeanPostProcessor}
  * implementation that passes the ApplicationContext to beans that
  * implement the {@link EnvironmentAware}, {@link EmbeddedValueResolverAware},
@@ -49,7 +46,6 @@ import org.springframework.util.StringValueResolver;
  * @author Juergen Hoeller
  * @author Costin Leau
  * @author Chris Beams
- * @since 10.10.2003
  * @see org.springframework.context.EnvironmentAware
  * @see org.springframework.context.EmbeddedValueResolverAware
  * @see org.springframework.context.ResourceLoaderAware
@@ -57,74 +53,90 @@ import org.springframework.util.StringValueResolver;
  * @see org.springframework.context.MessageSourceAware
  * @see org.springframework.context.ApplicationContextAware
  * @see org.springframework.context.support.AbstractApplicationContext#refresh()
+ * @since 10.10.2003
  */
 class ApplicationContextAwareProcessor implements BeanPostProcessor {
 
-	private final ConfigurableApplicationContext applicationContext;
+    private final ConfigurableApplicationContext applicationContext;
 
-	private final StringValueResolver embeddedValueResolver;
-
-
-	/**
-	 * Create a new ApplicationContextAwareProcessor for the given context.
-	 */
-	public ApplicationContextAwareProcessor(ConfigurableApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-		this.embeddedValueResolver = new EmbeddedValueResolver(applicationContext.getBeanFactory());
-	}
+    private final StringValueResolver embeddedValueResolver;
 
 
-	@Override
-	@Nullable
-	public Object postProcessBeforeInitialization(final Object bean, String beanName) throws BeansException {
-		AccessControlContext acc = null;
+    /**
+     * Create a new ApplicationContextAwareProcessor for the given context.
+     */
+    public ApplicationContextAwareProcessor(ConfigurableApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+        this.embeddedValueResolver = new EmbeddedValueResolver(applicationContext.getBeanFactory());
+    }
 
-		if (System.getSecurityManager() != null &&
-				(bean instanceof EnvironmentAware || bean instanceof EmbeddedValueResolverAware ||
-						bean instanceof ResourceLoaderAware || bean instanceof ApplicationEventPublisherAware ||
-						bean instanceof MessageSourceAware || bean instanceof ApplicationContextAware)) {
-			acc = this.applicationContext.getBeanFactory().getAccessControlContext();
-		}
 
-		if (acc != null) {
-			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-				invokeAwareInterfaces(bean);
-				return null;
-			}, acc);
-		}
-		else {
-			invokeAwareInterfaces(bean);
-		}
+    /**
+     * doCreateBean之前的后置处理
+     *
+     * @param bean     the new bean instance
+     * @param beanName the name of the bean
+     * @return
+     * @throws BeansException
+     */
+    @Override
+    @Nullable
+    public Object postProcessBeforeInitialization(final Object bean, String beanName) throws BeansException {
+        AccessControlContext acc = null;
 
-		return bean;
-	}
+        if (System.getSecurityManager() != null &&
+                (bean instanceof EnvironmentAware || bean instanceof EmbeddedValueResolverAware ||
+                        bean instanceof ResourceLoaderAware || bean instanceof ApplicationEventPublisherAware ||
+                        bean instanceof MessageSourceAware || bean instanceof ApplicationContextAware)) {
+            acc = this.applicationContext.getBeanFactory().getAccessControlContext();
+        }
 
-	private void invokeAwareInterfaces(Object bean) {
-		if (bean instanceof Aware) {
-			if (bean instanceof EnvironmentAware) {
-				((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());
-			}
-			if (bean instanceof EmbeddedValueResolverAware) {
-				((EmbeddedValueResolverAware) bean).setEmbeddedValueResolver(this.embeddedValueResolver);
-			}
-			if (bean instanceof ResourceLoaderAware) {
-				((ResourceLoaderAware) bean).setResourceLoader(this.applicationContext);
-			}
-			if (bean instanceof ApplicationEventPublisherAware) {
-				((ApplicationEventPublisherAware) bean).setApplicationEventPublisher(this.applicationContext);
-			}
-			if (bean instanceof MessageSourceAware) {
-				((MessageSourceAware) bean).setMessageSource(this.applicationContext);
-			}
-			if (bean instanceof ApplicationContextAware) {
-				((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
-			}
-		}
-	}
+        if (acc != null) {
+            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                invokeAwareInterfaces(bean);
+                return null;
+            }, acc);
+        } else {
+            invokeAwareInterfaces(bean);
+        }
 
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) {
-		return bean;
-	}
+        return bean;
+    }
+
+    private void invokeAwareInterfaces(Object bean) {
+        if (bean instanceof Aware) {
+            if (bean instanceof EnvironmentAware) {
+                ((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());
+            }
+            if (bean instanceof EmbeddedValueResolverAware) {
+                ((EmbeddedValueResolverAware) bean).setEmbeddedValueResolver(this.embeddedValueResolver);
+            }
+            if (bean instanceof ResourceLoaderAware) {
+                ((ResourceLoaderAware) bean).setResourceLoader(this.applicationContext);
+            }
+            if (bean instanceof ApplicationEventPublisherAware) {
+                ((ApplicationEventPublisherAware) bean).setApplicationEventPublisher(this.applicationContext);
+            }
+            if (bean instanceof MessageSourceAware) {
+                ((MessageSourceAware) bean).setMessageSource(this.applicationContext);
+            }
+            /**
+             * 目前找到的一个扩展：springmvc的url映射controller
+             * 在springmvc的处理器映射器HandlerMapping注册到子容器时，
+             * 实例化doCreateBean之前会进行后置处理器的调用：
+             * 抽象父类AbstractHandlerMapping继承WebApplicationObjectSupport，
+             * WebApplicationObjectSupport实现了ApplicationObjectSupport，
+             * ApplicationObjectSupport实现了ApplicationContextAware接口的setApplicationContext
+             */
+            if (bean instanceof ApplicationContextAware) {
+                ((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
+            }
+        }
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) {
+        return bean;
+    }
 
 }
