@@ -23,6 +23,10 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 
 /**
  * 这个类用来创建父容器和子容器，但是父子容器还没进行关联，那么在哪里进行关联呢？
+ * web容器类型
+ * web.xml: XmlWebApplicationContext
+ * spi: AnnotationConfigWebApplicationContext
+ *
  * <p>
  * <p>
  * {@link org.springframework.web.WebApplicationInitializer WebApplicationInitializer}
@@ -60,7 +64,7 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer exten
         // 获取关于父容器的配置
         Class<?>[] configClasses = getRootConfigClasses();
         if (!ObjectUtils.isEmpty(configClasses)) {
-            // 父容器
+            // 父容器 类型：AnnotationConfigWebApplicationContext
             AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
             context.register(configClasses);
             return context;

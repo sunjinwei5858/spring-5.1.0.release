@@ -26,7 +26,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 /**
- * 注册三大组件的：listener
+ * 注册listener+创建父容器
  * <p>
  * <p>
  * Convenient base class for {@link WebApplicationInitializer} implementations
@@ -50,7 +50,7 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 
 
     /**
-     * 作为WebApplicationInitializer的抽象类，这里的onStartup方法是注册listener监听器
+     * 作为WebApplicationInitializer的抽象类，这里的onStartup方法是注册listener监听器，ContextLoaderListener
      *
      * @param servletContext the {@code ServletContext} to initialize
      * @throws ServletException
@@ -70,6 +70,9 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
      * @param servletContext the servlet context to register the listener against
      */
     protected void registerContextLoaderListener(ServletContext servletContext) {
+        /**
+         * 创建父容器WebApplicationContext:调用子类AbstractAnnotationConfigDispatcherServletInitializer的createRootApplicationContext方法
+         */
         WebApplicationContext rootAppContext = createRootApplicationContext();
         if (rootAppContext != null) {
             // 创建一个ContextLoaderListener

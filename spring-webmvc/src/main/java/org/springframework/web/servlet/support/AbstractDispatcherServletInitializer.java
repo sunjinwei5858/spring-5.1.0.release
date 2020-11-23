@@ -31,6 +31,10 @@ import javax.servlet.FilterRegistration.Dynamic;
 import java.util.EnumSet;
 
 /**
+ * spring通过AbstractDispatcherServletInitializer实现AbstractContextLoaderInitializer，【注册子容器】
+ * AbstractContextLoaderInitializer实现WebApplicationInitializer接口，@HandlerTypes 【注册父容器】
+ * 注册父容器和子容器
+ *
  * 注册三大组件的：DispatcherServlet+filter
  * <p>
  * <p>
@@ -85,10 +89,15 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
     protected void registerDispatcherServlet(ServletContext servletContext) {
         String servletName = getServletName();
         Assert.hasLength(servletName, "getServletName() must not return null or empty");
-
+        /**
+         * 创建子容器
+         */
         WebApplicationContext servletAppContext = createServletApplicationContext();
         Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
+        /**
+         * 创建前端控制器DispatcherServlet，返回FrameworkServlet
+         */
         FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
         Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
         dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
