@@ -20,8 +20,9 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 /**
- * ContextLoaderListener实现了ServletContextListener，
+ * spring通过ContextLoaderListener实现了ServletContextListener。
  * 作用：初始化WebApplicationContext父容器，并将容器放置在ServletContext中。
+ *
  * 每一个Web应用者附一个ServletContext与之相关联。
  * ServletContext对象在应用启动时被创建， 在应用关闭的时候被销毁。 ServletContext在全局范围内有效，类似于应用中的一个全局变量。
  * <p>
