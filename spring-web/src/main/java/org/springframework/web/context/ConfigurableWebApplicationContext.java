@@ -16,13 +16,15 @@
 
 package org.springframework.web.context;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.lang.Nullable;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+
 /**
+ * spring mvc的父容器接口ConfigurableWebApplicationContext
+ * <p>
  * Interface to be implemented by configurable web application contexts.
  * Supported by {@link ContextLoader} and
  * {@link org.springframework.web.servlet.FrameworkServlet}.
@@ -33,79 +35,82 @@ import org.springframework.lang.Nullable;
  * They do not cause an initialization of the context on their own.
  *
  * @author Juergen Hoeller
- * @since 05.12.2003
  * @see #refresh
  * @see ContextLoader#createWebApplicationContext
  * @see org.springframework.web.servlet.FrameworkServlet#createWebApplicationContext
+ * @since 05.12.2003
  */
 public interface ConfigurableWebApplicationContext extends WebApplicationContext, ConfigurableApplicationContext {
 
-	/**
-	 * Prefix for ApplicationContext ids that refer to context path and/or servlet name.
-	 */
-	String APPLICATION_CONTEXT_ID_PREFIX = WebApplicationContext.class.getName() + ":";
+    /**
+     * Prefix for ApplicationContext ids that refer to context path and/or servlet name.
+     */
+    String APPLICATION_CONTEXT_ID_PREFIX = WebApplicationContext.class.getName() + ":";
 
-	/**
-	 * Name of the ServletConfig environment bean in the factory.
-	 * @see javax.servlet.ServletConfig
-	 */
-	String SERVLET_CONFIG_BEAN_NAME = "servletConfig";
+    /**
+     * Name of the ServletConfig environment bean in the factory.
+     *
+     * @see javax.servlet.ServletConfig
+     */
+    String SERVLET_CONFIG_BEAN_NAME = "servletConfig";
 
 
-	/**
-	 * Set the ServletContext for this web application context.
-	 * <p>Does not cause an initialization of the context: refresh needs to be
-	 * called after the setting of all configuration properties.
-	 * @see #refresh()
-	 */
-	void setServletContext(@Nullable ServletContext servletContext);
+    /**
+     * Set the ServletContext for this web application context.
+     * <p>Does not cause an initialization of the context: refresh needs to be
+     * called after the setting of all configuration properties.
+     *
+     * @see #refresh()
+     */
+    void setServletContext(@Nullable ServletContext servletContext);
 
-	/**
-	 * Set the ServletConfig for this web application context.
-	 * Only called for a WebApplicationContext that belongs to a specific Servlet.
-	 * @see #refresh()
-	 */
-	void setServletConfig(@Nullable ServletConfig servletConfig);
+    /**
+     * Set the ServletConfig for this web application context.
+     * Only called for a WebApplicationContext that belongs to a specific Servlet.
+     *
+     * @see #refresh()
+     */
+    void setServletConfig(@Nullable ServletConfig servletConfig);
 
-	/**
-	 * Return the ServletConfig for this web application context, if any.
-	 */
-	@Nullable
-	ServletConfig getServletConfig();
+    /**
+     * Return the ServletConfig for this web application context, if any.
+     */
+    @Nullable
+    ServletConfig getServletConfig();
 
-	/**
-	 * Set the namespace for this web application context,
-	 * to be used for building a default context config location.
-	 * The root web application context does not have a namespace.
-	 */
-	void setNamespace(@Nullable String namespace);
+    /**
+     * Set the namespace for this web application context,
+     * to be used for building a default context config location.
+     * The root web application context does not have a namespace.
+     */
+    void setNamespace(@Nullable String namespace);
 
-	/**
-	 * Return the namespace for this web application context, if any.
-	 */
-	@Nullable
-	String getNamespace();
+    /**
+     * Return the namespace for this web application context, if any.
+     */
+    @Nullable
+    String getNamespace();
 
-	/**
-	 * Set the config locations for this web application context in init-param style,
-	 * i.e. with distinct locations separated by commas, semicolons or whitespace.
-	 * <p>If not set, the implementation is supposed to use a default for the
-	 * given namespace or the root web application context, as appropriate.
-	 */
-	void setConfigLocation(String configLocation);
+    /**
+     * Set the config locations for this web application context in init-param style,
+     * i.e. with distinct locations separated by commas, semicolons or whitespace.
+     * <p>If not set, the implementation is supposed to use a default for the
+     * given namespace or the root web application context, as appropriate.
+     */
+    void setConfigLocation(String configLocation);
 
-	/**
-	 * Set the config locations for this web application context.
-	 * <p>If not set, the implementation is supposed to use a default for the
-	 * given namespace or the root web application context, as appropriate.
-	 */
-	void setConfigLocations(String... configLocations);
+    /**
+     * Set the config locations for this web application context.
+     * <p>If not set, the implementation is supposed to use a default for the
+     * given namespace or the root web application context, as appropriate.
+     */
+    void setConfigLocations(String... configLocations);
 
-	/**
-	 * Return the config locations for this web application context,
-	 * or {@code null} if none specified.
-	 */
-	@Nullable
-	String[] getConfigLocations();
+    /**
+     * Return the config locations for this web application context,
+     * or {@code null} if none specified.
+     */
+    @Nullable
+    String[] getConfigLocations();
 
 }
