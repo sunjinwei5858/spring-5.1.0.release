@@ -548,7 +548,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 
     /**
-     * init：关联父子容器关系
+     * init：关联父子容器关系，这里进行初始化子容器，并进行关联
      * <p>
      * Overridden method of {@link HttpServletBean}, invoked after any bean properties
      * have been set. Creates this servlet's WebApplicationContext.
@@ -586,6 +586,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
     }
 
     /**
+     * 初始化子容器，父容器已经通过ContextLoaderListener完成了，
+     * <p>
      * Initialize and publish the WebApplicationContext for this servlet.
      * <p>Delegates to {@link #createWebApplicationContext} for actual creation
      * of the context. Can be overridden in subclasses.
@@ -598,7 +600,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
     protected WebApplicationContext initWebApplicationContext() {
         ServletContext servletContext = getServletContext();
         /**
-         * 从servletContext中取出父容器
+         * 1。从servletContext中取出父容器
          */
         WebApplicationContext rootContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
         WebApplicationContext wac = null;
@@ -635,6 +637,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
             wac = createWebApplicationContext(rootContext);
         }
 
+        /**
+         * 初始化DispatchServlet的组件：handler adapter viewSolver....
+         */
         if (!this.refreshEventReceived) {
             // Either the context is not a ConfigurableApplicationContext with refresh
             // support or the context injected at construction time had already been
@@ -709,6 +714,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
         if (configLocation != null) {
             wac.setConfigLocation(configLocation);
         }
+        /**
+         * refresh方法执行
+         */
         configureAndRefreshWebApplicationContext(wac);
 
         return wac;
@@ -1057,6 +1065,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
         initContextHolders(request, localeContext, requestAttributes);
 
         try {
+            /**
+             * doXXX 真正处理请求的地方 会一直调用子类，其实就是调用DispatchServlet的doService方法
+             */
             doService(request, response);
         } catch (ServletException | IOException ex) {
             failureCause = ex;
