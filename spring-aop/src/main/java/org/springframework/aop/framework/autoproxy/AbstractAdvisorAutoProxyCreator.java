@@ -69,6 +69,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 
     /**
+     * 真正实现getAdvicesAndAdvisorsForBean的地方：
+     * 获取指定bean的增强方法，包含两个步骤，获取所有的增强以及寻找适用于bean的增强并应用
+     * 所以findEligibleAdvisors方法包含了两个步骤：findCandidateAdvisors+findAdvisorsThatCanApply
+     *
      * @param beanClass    the class of the bean to advise
      * @param beanName     the name of the bean
      * @param targetSource
@@ -91,20 +95,33 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
     }
 
     /**
+     * findCandidateAdvisors+findAdvisorsThatCanApply包含了两部分
+     * <p>
      * Find all eligible Advisors for auto-proxying this class.
      *
      * @param beanClass the clazz to find advisors for
      * @param beanName  the name of the currently proxied bean
      * @return the empty List, not {@code null},
      * if there are no pointcuts or interceptors
-     * @see #findCandidateAdvisors
+     * @see #findCandidateAdvisors 子类进行重写了该方法
      * @see #sortAdvisors
      * @see #extendAdvisors
      */
     protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+
+        /**
+         * 1。调用子类AnnotationAwareAspectJAutoProxyCreator找出所有的增强器
+         */
         List<Advisor> candidateAdvisors = findCandidateAdvisors();
+
+        /**
+         * 2。找出满足我们配置的通配符的增强器
+         * 筛选可应用在 beanClass 上的 Advisor，通过 ClassFilter 和 MethodMatcher，【使用Aspectj表达式去匹配，类比正则表达式】
+         */
         List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+
         extendAdvisors(eligibleAdvisors);
+
         if (!eligibleAdvisors.isEmpty()) {
             eligibleAdvisors = sortAdvisors(eligibleAdvisors);
         }
@@ -112,6 +129,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
     }
 
     /**
+     * 这里是找事务相关的通知 传入advisor
+     * 事务相关的advisor调用此方法!!!! AbstractAdvisorAutoProxyCreator处理；找Advisor
+     * 切面相关的advisor调用子类AnnotationAwareAspectJAutoProxyCreator#findCandidateAdvisors()方法处理：找Object
+     * <p>
      * Find all candidate Advisors to use in auto-proxying.
      *
      * @return the List of candidate Advisors
@@ -136,6 +157,9 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
         ProxyCreationContext.setCurrentProxiedBeanName(beanName);
         try {
+            /**
+             * 完成AspectJ表达式的匹配：class+method
+             */
             return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
         } finally {
             ProxyCreationContext.setCurrentProxiedBeanName(null);

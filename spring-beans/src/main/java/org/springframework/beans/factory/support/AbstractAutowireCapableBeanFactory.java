@@ -1850,7 +1850,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
      */
     protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
         /**
-         * 1.回调aware接口方法 比如BeanNameAware，BeanFactoryAware，ApplicationContextAware
+         * 1.回调aware接口方法 比如BeanNameAware，BeanFactoryAware，ApplicationContextAware 这三个aware接口，还有别的aware接口放在后置处理器进行回调
          */
         if (System.getSecurityManager() != null) {
             AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
@@ -1870,7 +1870,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         if (mbd == null || !mbd.isSynthetic()) {
             /**
              * 后置处理器执行BeanPostProcessor.postProcessBeforeInitialization()，
-             * 生命周期方法回调顺序：1 如果有@PostConstrcut()注解
+             * 生命周期方法回调顺序：1 如果有@PostConstrcut()注解 2。剩余的一些aware接口回调，ApplicationContextAwareProcessor处理器
              */
             wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
         }

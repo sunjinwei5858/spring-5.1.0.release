@@ -28,10 +28,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * aop的功能基本上使用 AnnotationAwareAspectJAutoProxyCreator 这个后置处理器去完成的
+ * aop的功能基本上使用 AnnotationAwareAspectJAutoProxyCreator还有其抽象父类 这个BeanPost后置处理器去完成的
  * 所以该类非常重要 需要理解，是BeanPostProcessor的实现类，
  * 当spring加载bean的时候，会在实例化前后调用before和after方法，
- * 在父类 抽象类AbstractAutoProxyCreator中进行了实现
+ * 在父类 抽象类AbstractAutoProxyCreator中进行了实现.
+ *
+ * 这个类可以根据@Point注解定义的切点来自动代理相匹配的bean
  * <p>
  * <p>
  * {@link AspectJAwareAdvisorAutoProxyCreator} subclass that processes all AspectJ
@@ -96,7 +98,7 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
     protected List<Advisor> findCandidateAdvisors() {
         // Add all the Spring advisors found according to superclass rules.
         /**
-         * 先找出事务相关的advisor
+         * 先找出事务相关的advisor,调用父类AbstractAdvisorAutoProxyCreator
          */
         List<Advisor> advisors = super.findCandidateAdvisors();
         // Build Advisors for all AspectJ aspects in the bean factory.
@@ -105,11 +107,15 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
          */
         if (this.aspectJAdvisorsBuilder != null) {
             /**
-             * 找出aspect切面的通知 这里会将所有的 Object.class 进行扫描!!! 这里非常耗性能 所以会提前缓存好aop解析，缓存好通知
+             * 找出aspect切面的通知 这里会将所有的 Object.class 进行扫描!!!
+             * 这里非常耗性能 所以会提前缓存好aop解析，缓存好通知。此时应该可以直接从缓存中获取。
+             * 1。获取所有的beanName
+             * 2。遍历所有的beanName 找出声明了@AspectJ注解的类
+             * 3。对标记为@AspectJ注解的类进行增强器的获取
+             * 4。将提取结果加入缓存
              */
             List<Advisor> aspectJAdvisors = this.aspectJAdvisorsBuilder.buildAspectJAdvisors();
             advisors.addAll(aspectJAdvisors);
-
         }
         /**
          * 返回我们所有的通知

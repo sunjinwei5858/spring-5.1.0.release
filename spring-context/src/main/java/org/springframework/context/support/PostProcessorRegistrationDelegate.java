@@ -31,7 +31,7 @@ import org.springframework.lang.Nullable;
 import java.util.*;
 
 /**
- * 这个类相当于是BeanFactoryPostProcessor和BeanPostProcessor后置处理器的工具类：
+ * 这个类相当于是BeanFactoryPostProcessor和BeanPOostProcessor后置处理器的工具类：
  * 1。BeanFactoryPostProcessor:
  * 有invoke方法，
  * AnnotatedBeanDefinitionReader初始化已经将基本的后置处理器注册到bean定义，所以这里直接调用getBean方法进行初始化，然后存储到单例缓存池

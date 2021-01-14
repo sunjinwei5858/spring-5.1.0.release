@@ -43,6 +43,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 初始化WebApplicationObjectSupport 会去初始化父类WebApplicationObjectSupport，
+ * 父类WebApplicationObjectSupport的无参构造会去：
+ * <p>
  * Abstract base class for {@link org.springframework.web.servlet.HandlerMapping}
  * implementations. Supports ordering, a default handler, handler interceptors,
  * including handler interceptors mapped by path patterns.
@@ -471,7 +474,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 
     /**
      * 将配置中的拦截器添加到HandlerExecutionChain执行链中
-     *
+     * <p>
      * Build a {@link HandlerExecutionChain} for the given handler, including
      * applicable interceptors.
      * <p>The default implementation builds a standard {@link HandlerExecutionChain}

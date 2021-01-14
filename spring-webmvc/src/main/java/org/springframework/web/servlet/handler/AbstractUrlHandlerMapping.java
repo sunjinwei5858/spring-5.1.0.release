@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 /**
+ * AbstractUrlHandlerMapping
+ *
  * Abstract base class for URL-mapped {@link org.springframework.web.servlet.HandlerMapping}
  * implementations. Provides infrastructure for mapping handlers to URLs and configurable
  * URL lookup. For information on the latter, see "alwaysUseFullPath" property.

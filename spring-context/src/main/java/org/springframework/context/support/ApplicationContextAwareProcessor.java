@@ -72,7 +72,7 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 
 
     /**
-     * doCreateBean之前的后置处理
+     * bean的第三阶段initializeBean：调用invokeInitMethods之前完成所有的aware接口回调，属于后置处理器
      *
      * @param bean     the new bean instance
      * @param beanName the name of the bean

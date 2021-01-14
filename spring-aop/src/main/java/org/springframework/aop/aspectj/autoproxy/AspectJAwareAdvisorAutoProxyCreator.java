@@ -94,7 +94,7 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
     }
 
     /**
-     * shouldSkip!!!!
+     * shouldSkip!!!! 第一次进行aop切面类的解析,会进行缓存，之后都是从缓存中获取
      *
      * @param beanClass the class of the bean
      * @param beanName  the name of the bean
@@ -104,13 +104,13 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
     protected boolean shouldSkip(Class<?> beanClass, String beanName) {
         // TODO: Consider optimization by caching the list of the aspect names
         /**
+         * 调用子类方法：AnnotationAwareAspectJAutoProxyCreator#findCandidateAdvisors()
          * 找出所有的切面通知集合 !!!! 非常重要 进行切面的缓存 从容器中Object.class中找
          */
         List<Advisor> candidateAdvisors = findCandidateAdvisors();
 
         for (Advisor advisor : candidateAdvisors) {
-            if (advisor instanceof AspectJPointcutAdvisor &&
-                    ((AspectJPointcutAdvisor) advisor).getAspectName().equals(beanName)) {
+            if (advisor instanceof AspectJPointcutAdvisor && ((AspectJPointcutAdvisor) advisor).getAspectName().equals(beanName)) {
                 return true;
             }
         }

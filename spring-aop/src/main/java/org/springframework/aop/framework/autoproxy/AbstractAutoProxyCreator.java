@@ -302,7 +302,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
             boolean infrastructureClass = isInfrastructureClass(beanClass);
 
             /**
-             * shouldSkip该方法会去扫描aop切面类的通知 并进行缓存！！！！
+             * shouldSkip该方法会去扫描aop切面类的通知 并进行缓存!!!
              * 调用的是AspectJAwareAdvisorAutoProxyCreator#shouldSkip(java.lang.Class, java.lang.String)
              */
             boolean shouldSkip = shouldSkip(beanClass, beanName);
@@ -321,7 +321,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
                 this.targetSourcedBeans.add(beanName);
             }
             /**
-             * 如果有自定义的目标 那么在这里找到增强器
+             * 如果有自定义的目标 那么在这里找到增强器，目前自己还没有看到这个扩展
              */
             Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, targetSource);
 
