@@ -95,6 +95,13 @@ import java.util.function.Supplier;
  */
 public class GenericApplicationContext extends AbstractApplicationContext implements BeanDefinitionRegistry {
 
+    /**
+     * 这里可以说明ApplicationContext和BeanFactory是组合的关系，查看ApplicationContext的类图还可以发现 有继承的关系
+     * 这也是为什么我们总是把ApplicationContext当成容器来看的主要原因
+     * 因为对外来看，这两者是一体的；
+     * 对内来看，又是组合关系
+     * ApplicationContext为上下文，而BeanFactory为Bean容器，进行区分。
+     */
     private final DefaultListableBeanFactory beanFactory;
 
     @Nullable
