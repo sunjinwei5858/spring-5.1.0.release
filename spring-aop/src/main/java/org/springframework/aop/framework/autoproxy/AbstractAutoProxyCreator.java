@@ -439,13 +439,15 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
         // Create proxy if we have advice.
         /**
-         * 如果存在增强方法则创建代理：getAdvicesAndAdvisorsForBean就是真正创建代理的方法，交给子类去实现的，这就是扩展，父类定义的足够高，子类可以尽情扩展
+         * 如果存在增强方法则创建代理：getAdvicesAndAdvisorsForBean就是真正创建代理的方法，
+         * 交给子类去实现的，这就是扩展，父类定义的足够高，子类可以尽情扩展
          *
          * 如果有通知的话 就创建代理对象。获取对应的advise,不但要找出增强器，还需要判断增强器是否满足要求。
          * 1。找出增强器
          * 2。寻找匹配的增强器【是否在切点配置的通配符中】
          * 3。创建代理createProxy
          */
+        // 获取可以增强到当前Bean的Advisor
         Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
         if (specificInterceptors != DO_NOT_PROXY) {
             this.advisedBeans.put(cacheKey, Boolean.TRUE);
