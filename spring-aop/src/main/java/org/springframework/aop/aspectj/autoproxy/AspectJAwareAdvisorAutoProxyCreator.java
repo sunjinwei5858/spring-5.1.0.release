@@ -102,8 +102,8 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
      */
     @Override
     protected boolean shouldSkip(Class<?> beanClass, String beanName) {
-        // TODO: Consider optimization by caching the list of the aspect names
         /**
+         * 返回所有的通知，如@Before @After @AfterThrowing @Round
          * 调用子类方法：AnnotationAwareAspectJAutoProxyCreator#findCandidateAdvisors()
          * 找出所有的切面通知集合 !!!! 非常重要 进行切面的缓存 从容器中Object.class中找
          */

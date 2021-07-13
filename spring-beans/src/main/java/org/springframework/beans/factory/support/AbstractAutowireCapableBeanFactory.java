@@ -39,6 +39,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 /**
+ * AbstractAutowireCapableBeanFactory的createBean方法--调用doCreateBean()
+ *
+ * <p>
  * Abstract bean factory superclass that implements default bean creation,
  * with the full capabilities specified by the {@link RootBeanDefinition} class.
  * Implements the {@link org.springframework.beans.factory.config.AutowireCapableBeanFactory}
@@ -480,6 +483,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         try {
             /**
+             * 切面解析
              * Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
              * doCreateBean的前置处理
              * 一般不会在此处生成代理对象，为什么不能生成代理对象，不管是我们的jdk还是cglib代理都不会在此处进行代理
@@ -498,6 +502,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         try {
             /**
+             * 代理增强也会在这一步处理（创建代理） 在方法里面的initializeBean
              * 真正创建bean的实例化对象的过程doCreateBean
              */
             Object beanInstance = doCreateBean(beanName, mbdToUse, args);
@@ -606,7 +611,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
              */
             populateBean(beanName, mbd, instanceWrapper);
             /**
-             * bean的第三阶段：初始化bean-->初始化方法,可能返回代理对象
+             * bean的第三阶段：初始化bean-->初始化方法,可能返回代理对象 【代理增强 创建代理的入口】
              */
             exposedObject = initializeBean(beanName, exposedObject, mbd);
         } catch (Throwable ex) {
@@ -1404,7 +1409,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     /**
      * bean的第二阶段 属性注入 populateBean, 注入前调用后置处理器判断能不能注入，使用后置处理器完成inject注入，
-     *
+     * <p>
      * Populate the bean instance in the given BeanWrapper with the property values
      * from the bean definition.
      *

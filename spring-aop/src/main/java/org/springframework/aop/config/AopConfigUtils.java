@@ -162,6 +162,9 @@ public abstract class AopConfigUtils {
      * aop：注册或者升级（escalate）AnnotationAwareAspectJAutoProxyCreator
      * tx: 注册或者升级（escalate）InfrastructureAdvisorAutoProxyCreator
      *
+     * 可以看到，最终是注册到了Bean容器中，作为BeanDefinition存在。
+     * 我们可以认为aop的自动配置过程就是为了创建AnnotationAwareAspectJAutoProxyCreator这个类的BeanDefinition。
+     *
      * @param cls
      * @param registry
      * @param source
@@ -190,12 +193,13 @@ public abstract class AopConfigUtils {
             }
             return null;
         }
-
+        // 构建BeanDefinition
         RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
         beanDefinition.setSource(source);
         beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-        // 注册aop的AnnotationAwareAspectJAutoProxyCreator这个beanpost后置处理器
+        // 注册aop的AnnotationAwareAspectJAutoProxyCreator这个beanPost后置处理器
+        // 也就是注册到bean容器
         registry.registerBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME, beanDefinition);
         return beanDefinition;
     }

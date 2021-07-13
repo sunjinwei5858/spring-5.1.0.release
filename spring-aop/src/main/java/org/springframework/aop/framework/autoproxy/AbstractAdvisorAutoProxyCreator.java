@@ -129,6 +129,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
     }
 
     /**
+     * 这里的findCandidateAdvisors方法，将会从beanFactory中获得注解了@Aspect的类元数据，然后获取其中定义的Advisor。
      * 这里是找事务相关的通知 传入advisor
      * 事务相关的advisor调用此方法!!!! AbstractAdvisorAutoProxyCreator处理；找Advisor
      * 切面相关的advisor调用子类AnnotationAwareAspectJAutoProxyCreator#findCandidateAdvisors()方法处理：找Object
