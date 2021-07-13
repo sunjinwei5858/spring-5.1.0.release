@@ -535,7 +535,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 
     /**
-     * ApplicationContext和BeanFactory两者都是用于加载Bean的，但是相比之下，Application­Context提供了更多的扩展功能。
+     * ApplicationContext和BeanFactory两者都是用于加载Bean的，但是相比之下，ApplicationContext提供了更多的扩展功能。
      *
      * @throws BeansException
      * @throws IllegalStateException
@@ -545,7 +545,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
         synchronized (this.startupShutdownMonitor) {
             // Prepare this context for refreshing.
             /**
-             * 1。环境准备
+             * 1。环境准备：设置flag 时间 初始化properties
              */
             prepareRefresh();
 
@@ -554,6 +554,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
              * 2。初始化BeanFactory【注意：xml和注解方式获取方式不一样，即处理逻辑不一样】
              * 目的：因为ApplicationContext是BeanFactory的功能上的扩展，
              * 那么经过obtainFreshBeanFactory方法的ApplicationContext才有了BeanFactory的全部功能。
+             * 【获取ApplicationContext中组合的BeanFactory】
              */
             ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -576,7 +577,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
                 // Invoke factory processors registered as beans in the context.
                 /**
-                 * 5。实例化BeanFactoryPostProcessor后置处理器并且回调方法，
+                 * 5。实例化BeanFactoryPostProcessor后置处理器并且回调方法，【调用bean工厂的后置处理器】
                  * 点进方法可以看出：BeanDefinitionRegistryPostProcessor比BeanFactoryPostProcessor接口的处理时机更早
                  *
                  * BeanFactoryPostProcessor Instantiate and invoke all registered BeanFactoryPostProcessor beans,

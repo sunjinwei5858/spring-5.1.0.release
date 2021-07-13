@@ -310,6 +310,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
         if (this.componentsIndex != null && indexSupportsIncludeFilters()) {
             return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
         } else {
+            // 进入
             return scanCandidateComponents(basePackage);
         }
     }
@@ -413,10 +414,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
     private Set<BeanDefinition> scanCandidateComponents(String basePackage) {
         Set<BeanDefinition> candidates = new LinkedHashSet<>();
         try {
+
+            // basePackage拼接出搜索路径，例如：classpath*:cn/lay/springbootlearn/**/*.class
             String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
                     resolveBasePackage(basePackage) + '/' + this.resourcePattern;
             /**
-             * 将包下面所有的类加载进来
+             * 而getResources方法将会从搜索路径中获取相应的资源对象
              */
             Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
             boolean traceEnabled = logger.isTraceEnabled();
@@ -429,6 +432,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
                     try {
                         MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
                         if (isCandidateComponent(metadataReader)) {
+                            // 转化为BeanDefinition
                             ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
                             sbd.setResource(resource);
                             sbd.setSource(resource);
