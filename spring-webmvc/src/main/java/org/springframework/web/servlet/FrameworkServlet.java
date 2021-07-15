@@ -563,9 +563,12 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
         try {
             /**
-             * 这里进行setParent，将父子容器关联为父子关系
+             * 这里进行setParent，将父子容器关联为父子关系 这里是核心逻辑
              */
             this.webApplicationContext = initWebApplicationContext();
+            /**
+             * 这个也是空方法 交给子类去实现
+             */
             initFrameworkServlet();
         } catch (ServletException | RuntimeException ex) {
             logger.error("Context initialization failed", ex);
