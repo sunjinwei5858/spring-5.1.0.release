@@ -1832,9 +1832,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
      * 第三阶段：初始化bean
      * 1。aware接口调用 主要是初始化 invokeAwareMethods 包括BeanNameAware,BeanClassLoaderAware,BeanFactoryAware
      * 2。beanPostProcessor 后置处理器的在执行自定义的init初始化之前和之后调用后置处理器的
-     * applyBeanPostProcessorsBeforeInitialization：执行@PostConstruct方法
-     * initMethod: 这里调用两个方法，先执行实现了InitializaBean的afterProperties()方法；然后自定义的initMethod
-     * applyBeanPostProcessorsAfterInitialization:
+     * applyBeanPostProcessorsBeforeInitialization：有一个后置处理器会执行@PostConstruct方法
+     * initMethod: 这里调用两个方法，先执行实现了InitializeBean的afterProperties()方法；然后自定义的initMethod
+     * applyBeanPostProcessorsAfterInitialization: aop代理对象
      * <p>
      * Initialize the given bean instance, applying factory callbacks
      * as well as init methods and bean post processors.
@@ -1881,7 +1881,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         /**
-         * 3.初始化方法执行，先执行实现了InitializaBean的afterProperties()方法，最后再执行init-method方法
+         * 3.初始化方法执行，先执行实现了InitializeBean的afterProperties()方法，最后再执行init-method方法
          */
         try {
             invokeInitMethods(beanName, wrappedBean, mbd);

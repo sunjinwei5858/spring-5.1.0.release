@@ -54,10 +54,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * 该后置处理器继承了InitDestroyAnnotationBeanPostProcessor这个后置处理器
  * !!!
  * 该英文注释说明了 该后置处理器支持的是使用java jdk自带的注解
  * 比如@PostConstruct @PreDestroy @Resource 使用CommonAnnotationBeanPostProcessor这个后置处理器进行处理
- *
+ * <p>
  * 同时这也是完成属性注入的第二个后置处理器，因为属性注入也可以使用@Resource 注解
  * <p>
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
@@ -177,6 +178,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 
     /**
+     * 构造函数的时候 就对父类 也就是InitDestroyAnnotationBeanPostProcessor后置处理器 进行了属性赋值 PostConstruct PreDestroy
      * Create a new CommonAnnotationBeanPostProcessor,
      * with the init and destroy annotation types set to
      * {@link javax.annotation.PostConstruct} and {@link javax.annotation.PreDestroy},
