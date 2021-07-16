@@ -11,8 +11,8 @@ dependencyManagement {
 dependencies {
 	compile(project(":spring-beans"))
 	compile(project(":spring-core"))
-	optional(project(":spring-context"))
-	optional(project(":spring-oxm"))
+	compile(project(":spring-context"))
+	compile(project(":spring-oxm"))
 	optional("io.projectreactor.netty:reactor-netty")
 	optional("org.eclipse.jetty.websocket:websocket-server") {
 		exclude group: "javax.servlet", module: "javax.servlet-api"

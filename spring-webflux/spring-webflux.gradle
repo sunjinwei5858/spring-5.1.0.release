@@ -13,7 +13,7 @@ dependencies {
 	compile(project(":spring-core"))
 	compile(project(":spring-web"))
 	compile("io.projectreactor:reactor-core")
-	optional(project(":spring-context"))
+	compile(project(":spring-context"))
 	optional(project(":spring-context-support"))  // for FreeMarker support
 	optional("javax.servlet:javax.servlet-api:4.0.1")
 	optional("javax.websocket:javax.websocket-api:1.1")

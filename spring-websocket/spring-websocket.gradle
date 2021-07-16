@@ -12,8 +12,8 @@ dependencies {
 	compile(project(":spring-context"))
 	compile(project(":spring-core"))
 	compile(project(":spring-web"))
-	optional(project(":spring-messaging"))
-	optional(project(":spring-webmvc"))
+	compile(project(":spring-messaging"))
+	compile(project(":spring-webmvc"))
 	optional("javax.servlet:javax.servlet-api:4.0.1")
 	optional("javax.websocket:javax.websocket-api:1.1")
 	optional("org.apache.tomcat:tomcat-websocket:${tomcatVersion}") {
