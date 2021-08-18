@@ -560,10 +560,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
             // Prepare the bean factory for use in this context.
             /**
+             *
              * 3。对BeanFactory进行功能的各项填充：属性类型转换器；准备一些组件放置到容器中，注意不是单例缓存池；增加对SPEL表达式的支持
-             * 设置一些组件 其实也是放到容器当中 比如ApplicationContext，BeanFactory，ResourceLoader，ApplicationEventPublisher，
+             * 设置一些组件 其实也是放到容器当中 比如ApplicationContext，BeanFactory，ResourceLoader，ApplicationEventPublisher!!!
              * 这几个可以直接进行属性注入
-             * https://blog.csdn.net/java_lyvee/article/details/105092466 这篇博客进行了验证ApplicationContext
+             * @see https://blog.csdn.net/java_lyvee/article/details/105092466
+             * 这篇博客进行了验证ApplicationContext
              * 并不是在singltonObjects单例缓存池，又是存储在哪里，并且是什么时候进行注入的？
              */
             prepareBeanFactory(beanFactory);
