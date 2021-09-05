@@ -535,7 +535,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 
     /**
-     * ApplicationContext和BeanFactory两者都是用于加载Bean的，但是相比之下，Application­Context提供了更多的扩展功能。
+     * ApplicationContext和BeanFactory两者都是用于加载Bean的，但是相比之下，ApplicationContext提供了更多的扩展功能。
      *
      * @throws BeansException
      * @throws IllegalStateException
@@ -545,7 +545,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
         synchronized (this.startupShutdownMonitor) {
             // Prepare this context for refreshing.
             /**
-             * 1。环境准备
+             * 1。环境准备：设置flag 时间 初始化properties
              */
             prepareRefresh();
 
@@ -554,15 +554,18 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
              * 2。初始化BeanFactory【注意：xml和注解方式获取方式不一样，即处理逻辑不一样】
              * 目的：因为ApplicationContext是BeanFactory的功能上的扩展，
              * 那么经过obtainFreshBeanFactory方法的ApplicationContext才有了BeanFactory的全部功能。
+             * 【获取ApplicationContext中组合的BeanFactory】
              */
             ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
             // Prepare the bean factory for use in this context.
             /**
+             *
              * 3。对BeanFactory进行功能的各项填充：属性类型转换器；准备一些组件放置到容器中，注意不是单例缓存池；增加对SPEL表达式的支持
-             * 设置一些组件 其实也是放到容器当中 比如ApplicationContext，BeanFactory，ResourceLoader，ApplicationEventPublisher，
+             * 设置一些组件 其实也是放到容器当中 比如ApplicationContext，BeanFactory，ResourceLoader，ApplicationEventPublisher!!!
              * 这几个可以直接进行属性注入
-             * https://blog.csdn.net/java_lyvee/article/details/105092466 这篇博客进行了验证ApplicationContext
+             * @see https://blog.csdn.net/java_lyvee/article/details/105092466
+             * 这篇博客进行了验证ApplicationContext
              * 并不是在singltonObjects单例缓存池，又是存储在哪里，并且是什么时候进行注入的？
              */
             prepareBeanFactory(beanFactory);
@@ -576,7 +579,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
                 // Invoke factory processors registered as beans in the context.
                 /**
-                 * 5。实例化BeanFactoryPostProcessor后置处理器并且回调方法，
+                 * 5。实例化BeanFactoryPostProcessor后置处理器并且回调方法，【调用bean工厂的后置处理器】
                  * 点进方法可以看出：BeanDefinitionRegistryPostProcessor比BeanFactoryPostProcessor接口的处理时机更早
                  *
                  * BeanFactoryPostProcessor Instantiate and invoke all registered BeanFactoryPostProcessor beans,

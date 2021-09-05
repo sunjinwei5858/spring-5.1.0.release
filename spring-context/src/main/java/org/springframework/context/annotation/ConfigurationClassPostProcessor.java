@@ -253,7 +253,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
     /**
      * 1。@Component注解扫描类，注册bean定义信息
-     * 2。将@EnableXXX 注解中@Import导入的类注册bean定义，并且封装到ConfigutationClass
+     * 2。将@EnableXXX 注解中@Import导入的类注册bean定义，并且封装到ConfigRationClass
      * <p>
      * <p>
      * Build and validate a configuration model based on the registry of
@@ -275,6 +275,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                     logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
                 }
             } else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
+                // 默认仅有主类被添加
                 configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
             }
         }
@@ -322,8 +323,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
             /**
              * 这里parse做了很多事情：
              * 1。@ComponentScan 包扫描注册bean定义
-             * 2。将@EnableXXX 注解中@Import导入的ImportBeanDefinitionRegistrar实现类 添加到ConfigutationClass的importBeanDefinitionRegistrars容器
-             * 3。将@EnableXXX 注解中@Import导入的ImportSelect实现类 添加到ConfigurationClassParser的deferredImportSelectors这个linkedlist集合
+             * 2。将@EnableXXX 注解中@Import导入的ImportBeanDefinitionRegistrar实现类 添加到ConfigurationClass的importBeanDefinitionRegistrars容器
+             * 3。将@EnableXXX 注解中@Import导入的ImportSelect实现类 添加到ConfigurationClassParser的deferredImportSelectors这个linkedList集合
              *
              * 将配置信息封装成ConfigurationClasses对象，可能是一个ConfigurationClasses对象集合，因为会有各种注解
              */

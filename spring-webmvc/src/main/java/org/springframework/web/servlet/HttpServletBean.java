@@ -137,6 +137,8 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
     }
 
     /**
+     * 该init方法是servlet提供的方法 需要子类实现的 spring在这里进行了实现，其中的initServletBean方法 spring也提供给了子类FrameworkServlet实现
+     * <p>
      * Map config parameters onto bean properties of this servlet, and
      * invoke subclass initialization.
      *

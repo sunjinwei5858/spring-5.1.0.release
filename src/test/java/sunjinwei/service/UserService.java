@@ -1,14 +1,11 @@
 package sunjinwei.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
-//@Component
+@Component
 public class UserService {
-
-    @Autowired
-    private StudentService studentService;
 
     private String name;
 
@@ -18,14 +15,6 @@ public class UserService {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return "UserService{" +
-                "studentService=" + studentService +
-                ", name='" + name + '\'' +
-                '}';
     }
 
     public void test() {
@@ -40,5 +29,6 @@ public class UserService {
     public void postConstructMethod() {
         System.out.println("==UserService @PostConstruct==");
     }
+
 
 }

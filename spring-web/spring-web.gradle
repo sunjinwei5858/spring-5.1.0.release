@@ -11,9 +11,9 @@ dependencyManagement {
 dependencies {
 	compile(project(":spring-beans"))
 	compile(project(":spring-core"))
-	optional(project(":spring-aop"))
-	optional(project(":spring-context"))
-	optional(project(":spring-oxm"))
+	compile(project(":spring-aop"))
+	compile(project(":spring-context"))
+	compile(project(":spring-oxm"))
 	optional("javax.servlet:javax.servlet-api:3.1.0")
 	optional("javax.servlet.jsp:javax.servlet.jsp-api:2.3.2-b02")
 	optional("javax.el:javax.el-api:3.0.1-b04")

@@ -53,10 +53,16 @@ public class TransactionManagementConfigurationSelector extends AdviceModeImport
     @Override
     protected String[] selectImports(AdviceMode adviceMode) {
         switch (adviceMode) {
+            // 默认是proxy
             case PROXY:
                 System.out.println("TransactionManagementConfigurationSelector selectImports 方法开始。。。。。。");
-                return new String[]{AutoProxyRegistrar.class.getName(),
-                        ProxyTransactionManagementConfiguration.class.getName()};
+                return new String[]{
+                        // aop创建代理将会通过AnnotationAwareAspectJAutoProxyCreator来处理，
+                        // 所以这里的AutoProxyRegistrar比AnnotationAwareAspectJAutoProxyCreator的优先级低。
+                        AutoProxyRegistrar.class.getName(),
+                        // ProxyTransactionManagementConfiguration是处理事务配置的
+                        ProxyTransactionManagementConfiguration.class.getName()
+                };
             case ASPECTJ:
                 return new String[]{determineTransactionAspectClass()};
             default:

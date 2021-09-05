@@ -96,7 +96,9 @@ public final class SpringFactoriesLoader {
          * 如果参数没有指定classLoader 那么
          */
         if (classLoaderToUse == null) {
-            classLoaderToUse = SpringFactoriesLoader.class.getClassLoader();
+            Class<SpringFactoriesLoader> aClass = SpringFactoriesLoader.class;
+
+            classLoaderToUse = aClass.getClassLoader();
         }
         List<String> factoryNames = loadFactoryNames(factoryClass, classLoaderToUse);
         if (logger.isTraceEnabled()) {

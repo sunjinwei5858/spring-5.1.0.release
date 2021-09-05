@@ -30,7 +30,10 @@ import java.io.Serializable;
 import java.util.Properties;
 
 /**
- * 事务增强器：支持整个事务功能的架构，该拦截器是如何实现事务特性的
+ * 事务增强器：支持整个事务功能的架构，该拦截器是如何实现事务特性的？从invoke方法入手!!!!
+ * 1。创建事务
+ * 2。回滚事务
+ * 3。事务提交
  * <p>
  * <p>
  * AOP Alliance MethodInterceptor for declarative transaction

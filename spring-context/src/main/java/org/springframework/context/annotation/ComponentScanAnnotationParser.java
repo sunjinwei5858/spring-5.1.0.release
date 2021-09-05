@@ -64,13 +64,12 @@ class ComponentScanAnnotationParser {
     }
 
     /**
-     * 此处进行注册@componentScan扫描的类 注册到bean定义map中。
-     * 但是为什么要重新new一个ClassPathBeanDefinitionScanner，
-     * 而不是使用ApplicationContext this()构造初始化好的一个ClassPathBeanDefinitionScanner？？？？
-     *
      * @param componentScan
      * @param declaringClass
      * @return
+     * @ComponentScan注解解析 此处进行注册@componentScan扫描的类 注册到bean定义map中。
+     * 但是为什么要重新new一个ClassPathBeanDefinitionScanner，
+     * 而不是使用ApplicationContext this()构造初始化好的一个ClassPathBeanDefinitionScanner？？？？
      */
     public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
         /**
@@ -110,6 +109,9 @@ class ComponentScanAnnotationParser {
             scanner.getBeanDefinitionDefaults().setLazyInit(true);
         }
 
+        /**
+         * 从basePackages配置获取扫描路径
+         */
         Set<String> basePackages = new LinkedHashSet<>();
         String[] basePackagesArray = componentScan.getStringArray("basePackages");
         for (String pkg : basePackagesArray) {
@@ -117,10 +119,16 @@ class ComponentScanAnnotationParser {
                     ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
             Collections.addAll(basePackages, tokenized);
         }
+        /**
+         * 从basePackageClasses获取扫描路径
+         */
         for (Class<?> clazz : componentScan.getClassArray("basePackageClasses")) {
             basePackages.add(ClassUtils.getPackageName(clazz));
         }
         if (basePackages.isEmpty()) {
+            /**
+             * 默认添加当前被解析类的路径作为根路径【终于找到了springboot默认把启动类下面的包添加到包扫描中这段代码】
+             */
             basePackages.add(ClassUtils.getPackageName(declaringClass));
         }
 
@@ -130,6 +138,7 @@ class ComponentScanAnnotationParser {
                 return declaringClass.equals(className);
             }
         });
+        // 扫描目标路径
         return scanner.doScan(StringUtils.toStringArray(basePackages));
     }
 

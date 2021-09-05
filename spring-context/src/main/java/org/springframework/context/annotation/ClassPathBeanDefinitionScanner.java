@@ -35,9 +35,9 @@ import java.util.Set;
  * 1。目前找到的一个扩展，mybatis-spring的ClassPathMapperScanner继承了ClassPathBeanDefinitionScanner，
  * 重写了doScan方法，这是mybatis整合spring一个非常牛逼的闪光点，doScan方法继续super.doScan，
  * 返回beanDefinitions后，进行修改bean定义的beanClass属性，因为mapper是接口，不能被实例化，这里进行了偷天换日，换成了MapperFactoryBean
- *
+ * <p>
  * 2。spring本身的应用：解析@ComponentScan包扫描，使用ComponentScanBeanDefinitionParser这个子类继承，调用父类doScan方法
- *
+ * <p>
  * A bean definition scanner that detects bean candidates on the classpath,
  * registering corresponding bean definitions with a given registry ({@code BeanFactory}
  * or {@code ApplicationContext}).
@@ -256,7 +256,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
     /**
      * scan方法很少使用：
      * 如果是 new AnnotationConfigApplicationContext(String... basePackages) 这种方式初始化容器，才会进行调用这个scan方法，很少用
-     *
+     * <p>
      * Perform a scan within the specified base packages.
      *
      * @param basePackages the packages to check for annotated classes
@@ -293,7 +293,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
         Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
         for (String basePackage : basePackages) {
             /**
-             * 过滤包下面加了@Component注解的类
+             * 过滤包下面加了@Component注解的类 扫描获取BeanDefinition
              */
             Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
             for (BeanDefinition candidate : candidates) {
@@ -317,6 +317,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
                      * 此处进行注册bean定义 使用BeanDefinitionReaderUtils工具类进行注册bean定义
                      */
                     beanDefinitions.add(definitionHolder);
+                    /**
+                     * 将beanDefinition注册到BeanFactory
+                     */
                     registerBeanDefinition(definitionHolder, this.registry);
                 }
             }
@@ -339,6 +342,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
     }
 
     /**
+     * 注册BeanDefinition到BeanFactory
+     * <p>
      * Register the specified bean with the given registry.
      * <p>Can be overridden in subclasses, e.g. to adapt the registration
      * process or to register further bean definitions for each scanned bean.
@@ -347,6 +352,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
      * @param registry         the BeanDefinitionRegistry to register the bean with
      */
     protected void registerBeanDefinition(BeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry) {
+        // 注册
         BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, registry);
     }
 

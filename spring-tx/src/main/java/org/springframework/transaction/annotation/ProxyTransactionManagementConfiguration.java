@@ -26,6 +26,8 @@ import org.springframework.transaction.interceptor.TransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 /**
+ * 事务是基于aop的，会去生成advisor，也就是BeanFactoryTransactionAttributeSourceAdvisor。
+ * <p>
  * {@code @Configuration} class that registers the Spring infrastructure beans
  * necessary to enable proxy-based annotation-driven transaction management.
  *
@@ -37,6 +39,12 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
 @Configuration
 public class ProxyTransactionManagementConfiguration extends AbstractTransactionManagementConfiguration {
 
+    /**
+     * BeanFactoryTransactionAttributeSourceAdvisor这个类实现类顶层接口Advisor
+     * 这里就是生成了一个Advisor，并作为Bean存在于BeanFactory当中。
+     *
+     * @return
+     */
     @Bean(name = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor() {

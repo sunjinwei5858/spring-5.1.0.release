@@ -1,6 +1,7 @@
 package sunjinwei.service;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 
@@ -21,9 +22,10 @@ public class StudentService {
      * exposeProxy为true，那么
      * @return
      */
+    @Transactional
     public String getName() {
 
-        System.out.println(6/0);
+        //System.out.println(6/0);
 
         return name;
     }

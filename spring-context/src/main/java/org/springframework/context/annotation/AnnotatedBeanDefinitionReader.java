@@ -35,6 +35,8 @@ import java.util.function.Supplier;
 
 /**
  * 这个类的作用：【没有继承和实现BeanDefinitionReader接口，是个单独的类】
+ * 【应用1：springboot启动类也就是配置类 就是通过AnnotatedBeanDefinitionReader注册配置类的bean定义的】
+ * 【应用2：spring本身如果使用注解配置 也是 通过这个类进行注册的】 自己写的 {@link MainConfig}
  * 1。方便编程式动态注册一个带注解的bean
  * 2。可以替代ClassPathBeanDefinitionScanner，具备相同的解析功能，ClassPathBeanDefinitionScanner是spring完成扫描的核心类。
  * 比如注册配置类，因为配置类无法自己扫描自己，所以AnnotatedBeanDefinitionReader的作用就是注册配置类。

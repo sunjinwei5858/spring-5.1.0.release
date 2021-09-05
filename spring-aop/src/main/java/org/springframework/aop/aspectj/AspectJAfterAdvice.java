@@ -58,6 +58,7 @@ public class AspectJAfterAdvice extends AbstractAspectJAdvice
             return mi.proceed();
         } finally {
             /**
+             * 激活增强方法
              * 后置方法一定会执行在这句代码得到验证，因为 mi.proceed();方法抛出异常，finally方法肯定会被执行
              */
             invokeAdviceMethod(getJoinPointMatch(), null, null);

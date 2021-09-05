@@ -31,16 +31,16 @@ import org.springframework.lang.Nullable;
 import java.util.*;
 
 /**
- * 这个类相当于是BeanFactoryPostProcessor和BeanPostProcessor后置处理器的工具类：
+ * 这个类相当于是BeanFactoryPostProcessor和BeanPOostProcessor后置处理器的工具类：
  * 1。BeanFactoryPostProcessor:
  * 有invoke方法，
  * AnnotatedBeanDefinitionReader初始化已经将基本的后置处理器注册到bean定义，所以这里直接调用getBean方法进行初始化，然后存储到单例缓存池
  * 接着回调各个后置处理器重写接口的方法
- *
+ * <p>
  * 2。BeanPostProcessor:
  * 有register方法，
- *  仅仅就是调用getBean方法，注册到单例缓存池 DefaultSingletonBeanRegistry
- *
+ * 仅仅就是调用getBean方法，注册到单例缓存池 DefaultSingletonBeanRegistry
+ * <p>
  * Delegate for AbstractApplicationContext's post-processor handling.
  *
  * @author Juergen Hoeller
@@ -54,6 +54,8 @@ final class PostProcessorRegistrationDelegate {
 
     /**
      * 此处想表达的是：
+     * 这里有两个过程：一是注册BeanFactoryPostProcessor后置处理器到BeanFactory容器中 二是回调后置处理器的方法
+     * <p>
      * 1。BeanDefinitionRegistryPostProcessor比BeanFactoryPostProcessor先实例化和回调方法，调用时机更早，可以在此处进行扩展
      * 2。BeanDefinitionRegistryPostProcessor还可以进行扩展，控制调用时机，【PriorityOrdered最早，其次Ordered】
      *
@@ -118,6 +120,9 @@ final class PostProcessorRegistrationDelegate {
                  * 1.1【PriorityOrdered】getBean 注册到单例缓存池 比如ConfigurationClassPostProcessor后置处理器
                  */
                 if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+                    /**
+                     * getBean()：注册BeanDefinitionRegistryPostProcessor到BeanFactory容器中 也就是BeanFactoryPostProcessor
+                     */
                     BeanDefinitionRegistryPostProcessor beanDefinitionRegistryPostProcessor = beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class);
                     currentRegistryProcessors.add(beanDefinitionRegistryPostProcessor);
                     processedBeans.add(ppName);
@@ -248,7 +253,7 @@ final class PostProcessorRegistrationDelegate {
     }
 
     /**
-     * 注册后置BeanPostProcessors到容器的一级缓存中：
+     * 实例化后置处理器BeanPostProcessors，并且将后置处理器保存到到容器的一级缓存中：调用了getBean()方法
      * 【不需要回调后置处理器的before和after方法，但是invokeBeanFactoryPostProcessors需要回调】
      * 根据优先级的顺序：PriorityOrdered,Ordered优先处理，最后轮到普通的BeanPost接口
      *
@@ -373,7 +378,7 @@ final class PostProcessorRegistrationDelegate {
 
     /**
      * 将BeanPostProcessors后置处理器添加到AbstractBeanFactory的beanPostProcessors这个list集合
-     *
+     * <p>
      * Register the given BeanPostProcessor beans.
      */
     private static void registerBeanPostProcessors(

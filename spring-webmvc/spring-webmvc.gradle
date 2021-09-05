@@ -15,8 +15,8 @@ dependencies {
 	compile(project(":spring-core"))
 	compile(project(":spring-expression"))
 	compile(project(":spring-web"))
-	optional(project(":spring-context-support"))  // for FreeMarker support
-	optional(project(":spring-oxm"))
+	compile(project(":spring-context-support"))  // for FreeMarker support
+	compile(project(":spring-oxm"))
 	optional("javax.servlet.jsp:javax.servlet.jsp-api:2.3.2-b02")
 	optional("javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1")
 	optional("javax.el:javax.el-api:3.0.1-b04")
