@@ -436,6 +436,7 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
                             ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
                             sbd.setResource(resource);
                             sbd.setSource(resource);
+                            // isCandidateComponent ：不能是接口 必须是实现类 所以mybatis整合spring 重写了该方法
                             if (isCandidateComponent(sbd)) {
                                 if (debugEnabled) {
                                     logger.debug("Identified candidate component class: " + resource);
