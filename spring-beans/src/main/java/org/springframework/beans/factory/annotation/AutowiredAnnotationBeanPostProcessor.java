@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 完成bean的第二阶段：属性注入的后置处理器其中之一
- * 支持注入的方式是注解@Autowired @Value
+ * 支持注入的方式是注解@Autowired @Value @Inject
  * <p>
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that autowires annotated fields, setter methods and arbitrary config methods.
@@ -133,6 +133,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
         this.autowiredAnnotationTypes.add(Autowired.class);
         this.autowiredAnnotationTypes.add(Value.class);
         try {
+        	// 这里通过反射 创建@Inject注解 然后添加到autowiredAnnotationTypes集合
             this.autowiredAnnotationTypes.add((Class<? extends Annotation>)
                     ClassUtils.forName("javax.inject.Inject", AutowiredAnnotationBeanPostProcessor.class.getClassLoader()));
             logger.trace("JSR-330 'javax.inject.Inject' annotation found and supported for autowiring");
