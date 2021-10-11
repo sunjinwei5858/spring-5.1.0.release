@@ -58,6 +58,10 @@ public class MethodProxy {
 		return proxy;
 	}
 
+	/**
+	 * 调用invokeSuper会调用init方法：使用了双重校验锁
+	 * FastClass机制就是对方法建立索引
+	 */
 	private void init() {
 		/*
 		 * Using a volatile invariant allows us to initialize the FastClass and
@@ -69,6 +73,7 @@ public class MethodProxy {
 		 */
 		if (fastClassInfo == null) {
 			synchronized (initLock) {
+				//
 				if (fastClassInfo == null) {
 					CreateInfo ci = createInfo;
 
@@ -228,6 +233,7 @@ public class MethodProxy {
 	}
 
 	/**
+	 * cglib实现动态代理，底层调用的方法，invokeSuper，底层使用FastClass
 	 * Invoke the original (super) method on the specified object.
 	 * @param obj the enhanced object, must be the object passed as the first
 	 * argument to the MethodInterceptor
