@@ -27,6 +27,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
 /**
+ * RestTemplate的抽象父类 在这里会进行设置拦截器ClientHttpRequestInterceptor
+ *
  * Base class for {@link org.springframework.web.client.RestTemplate}
  * and other HTTP accessing gateway helpers, adding interceptor-related
  * properties to {@link HttpAccessor}'s common properties.
@@ -69,7 +71,7 @@ public abstract class InterceptingHttpAccessor extends HttpAccessor {
 	 * Return the request interceptors that this accessor uses.
 	 * <p>The returned {@link List} is active and may get appended to.
 	 */
-	public List<ClientHttpRequestInterceptor> getInterceptors() {
+	public List<ClientHttpRequestInterceptor> getInterceptors()	 {
 		return this.interceptors;
 	}
 
@@ -83,6 +85,7 @@ public abstract class InterceptingHttpAccessor extends HttpAccessor {
 	}
 
 	/**
+	 * 重写了getRequestFactory方法,目的是为了
 	 * Overridden to expose an {@link InterceptingClientHttpRequestFactory}
 	 * if necessary.
 	 * @see #getInterceptors()
@@ -93,6 +96,7 @@ public abstract class InterceptingHttpAccessor extends HttpAccessor {
 		if (!CollectionUtils.isEmpty(interceptors)) {
 			ClientHttpRequestFactory factory = this.interceptingRequestFactory;
 			if (factory == null) {
+				// 传入 SimpleClientHttpRequestFactory 和 ClientHttpRequestInterceptor 拦截器
 				factory = new InterceptingClientHttpRequestFactory(super.getRequestFactory(), interceptors);
 				this.interceptingRequestFactory = factory;
 			}

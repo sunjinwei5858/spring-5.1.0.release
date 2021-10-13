@@ -24,6 +24,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
 
 /**
+ * 设置拦截器
  * {@link ClientHttpRequestFactory} wrapper with support for
  * {@link ClientHttpRequestInterceptor ClientHttpRequestInterceptors}.
  *

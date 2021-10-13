@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.springframework.http.HttpRequest;
 
 /**
+ * 如果想要定制化RestTemplate 那么就需要实现这个接口 进行定制化
  * Intercepts client-side HTTP requests. Implementations of this interface can be
  * {@linkplain org.springframework.web.client.RestTemplate#setInterceptors registered}
  * with the {@link org.springframework.web.client.RestTemplate RestTemplate},
