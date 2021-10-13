@@ -64,6 +64,9 @@ import org.springframework.web.util.DefaultUriBuilderFactory.EncodingMode;
 import org.springframework.web.util.UriTemplateHandler;
 
 /**
+ * RestTemplate是spring web 中第一个访问第三方Restful API接口的网络请求框架。
+ * ps：之前自己还以为RestTemplate是ribbon的类
+ *
  * Synchronous client to perform HTTP requests, exposing a simple, template
  * method API over underlying HTTP client libraries such as the JDK
  * {@code HttpURLConnection}, Apache HttpComponents, and others.
