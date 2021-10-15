@@ -37,6 +37,10 @@ import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
 
 /**
  * webflux 请求分发处理器 对应springmvc的分发处理器 dispatchservlet
+ * DispatcherHandler实现了WebHandler接口，WebHandler接口用于处理Web请求。
+ * 核心处理方法是handle
+ * DispatcherHandler实现了ApplicationContextAware接口 所以可以获取到ioc容器所有的bean
+ *
  * Central dispatcher for HTTP request handlers/controllers. Dispatches to
  * registered handlers for processing a request, providing convenient mapping
  * facilities.
@@ -91,6 +95,8 @@ public class DispatcherHandler implements WebHandler, ApplicationContextAware {
 	}
 
 	/**
+	 * DispatcherHandler的构造函数会初始化handlerMappings
+	 * 而HandlerMapping是一个定义了请求与处理器对象映射的接口且有多个实现类
 	 * Create a new {@code DispatcherHandler} for the given {@link ApplicationContext}.
 	 * @param applicationContext the application context to find the handler beans in
 	 */
@@ -118,31 +124,42 @@ public class DispatcherHandler implements WebHandler, ApplicationContextAware {
 	}
 
 
+	/**
+	 * 初始化策略：映射器HandlerMapping 适配器handlerAdapters 结果处理器HandlerResultHandler
+	 * @param context
+	 */
 	protected void initStrategies(ApplicationContext context) {
-		Map<String, HandlerMapping> mappingBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(
-				context, HandlerMapping.class, true, false);
+
+		// 这里会反射创建 映射器 HandlerMapping
+		Map<String, HandlerMapping> mappingBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerMapping.class, true, false);
 
 		ArrayList<HandlerMapping> mappings = new ArrayList<>(mappingBeans.values());
 		AnnotationAwareOrderComparator.sort(mappings);
 		this.handlerMappings = Collections.unmodifiableList(mappings);
 
-		Map<String, HandlerAdapter> adapterBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(
-				context, HandlerAdapter.class, true, false);
+		// 这里会反射创建 适配器 HandlerAdapter
+		Map<String, HandlerAdapter> adapterBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerAdapter.class, true, false);
 
 		this.handlerAdapters = new ArrayList<>(adapterBeans.values());
 		AnnotationAwareOrderComparator.sort(this.handlerAdapters);
 
-		Map<String, HandlerResultHandler> beans = BeanFactoryUtils.beansOfTypeIncludingAncestors(
-				context, HandlerResultHandler.class, true, false);
+		// 这里会反射创建 结果处理器HandlerResultHandler
+		Map<String, HandlerResultHandler> beans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerResultHandler.class, true, false);
 
 		this.resultHandlers = new ArrayList<>(beans.values());
 		AnnotationAwareOrderComparator.sort(this.resultHandlers);
 	}
 
 
+	/**
+	 * 网关收到请求后 如何处理请求，找到handlerMapping
+	 * @param exchange the current server exchange
+	 * @return
+	 */
 	@Override
 	public Mono<Void> handle(ServerWebExchange exchange) {
 		if (this.handlerMappings == null) {
+			// 不存在handlerMappings 则报错
 			return Mono.error(HANDLER_NOT_FOUND_EXCEPTION);
 		}
 		return Flux.fromIterable(this.handlerMappings)
