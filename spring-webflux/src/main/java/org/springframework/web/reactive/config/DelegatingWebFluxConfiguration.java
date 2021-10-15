@@ -29,6 +29,7 @@ import org.springframework.web.reactive.accept.RequestedContentTypeResolverBuild
 import org.springframework.web.reactive.result.method.annotation.ArgumentResolverConfigurer;
 
 /**
+ * 通过@EnableWebFlux注解导入的 实现了ApplicationContextAware
  * A subclass of {@code WebFluxConfigurationSupport} that detects and delegates
  * to all beans of type {@link WebFluxConfigurer} allowing them to customize the
  * configuration provided by {@code WebFluxConfigurationSupport}. This is the
