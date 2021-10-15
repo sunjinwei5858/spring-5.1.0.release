@@ -21,6 +21,8 @@ import reactor.core.publisher.Mono;
 import org.springframework.web.server.ServerWebExchange;
 
 /**
+ * webflux的映射器
+ *
  * Interface to be implemented by objects that define a mapping between
  * requests and handler objects.
  *

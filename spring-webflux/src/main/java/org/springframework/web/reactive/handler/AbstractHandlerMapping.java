@@ -37,6 +37,7 @@ import org.springframework.web.server.WebHandler;
 import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
+ * 抽象类在handler映射中用于抽取公用的功能
  * Abstract base class for {@link org.springframework.web.reactive.HandlerMapping}
  * implementations.
  *
