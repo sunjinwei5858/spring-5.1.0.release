@@ -22,6 +22,7 @@ import org.springframework.web.server.adapter.HttpWebHandlerAdapter;
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
 
 /**
+ * spring-cloud-gateway 引入了webflux 请求处理分发器
  * Contract to handle a web request.
  *
  * <p>Use {@link HttpWebHandlerAdapter} to adapt a {@code WebHandler} to an

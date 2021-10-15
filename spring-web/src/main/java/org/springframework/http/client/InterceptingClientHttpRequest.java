@@ -82,6 +82,7 @@ class InterceptingClientHttpRequest extends AbstractBufferingClientHttpRequest {
 		private final Iterator<ClientHttpRequestInterceptor> iterator;
 
 		public InterceptingRequestExecution() {
+			// 拦截器迭代器
 			this.iterator = interceptors.iterator();
 		}
 
@@ -89,10 +90,11 @@ class InterceptingClientHttpRequest extends AbstractBufferingClientHttpRequest {
 		public ClientHttpResponse execute(HttpRequest request, byte[] body) throws IOException {
 			if (this.iterator.hasNext()) {
 				ClientHttpRequestInterceptor nextInterceptor = this.iterator.next();
-				//
+				// 利用拦截器拦截处理 并传入InterceptingRequestExecution
 				return nextInterceptor.intercept(request, body, this);
 			}
 			else {
+				// 拦截器遍历完后开始发起真正的 http 请求
 				HttpMethod method = request.getMethod();
 				Assert.state(method != null, "No standard HTTP method");
 				ClientHttpRequest delegate = requestFactory.createRequest(request.getURI(), method);

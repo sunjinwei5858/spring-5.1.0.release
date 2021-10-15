@@ -36,6 +36,7 @@ import org.springframework.web.server.WebHandler;
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
 
 /**
+ * webflux 请求分发处理器 对应springmvc的分发处理器 dispatchservlet
  * Central dispatcher for HTTP request handlers/controllers. Dispatches to
  * registered handlers for processing a request, providing convenient mapping
  * facilities.
