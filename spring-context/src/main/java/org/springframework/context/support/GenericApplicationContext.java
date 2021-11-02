@@ -310,7 +310,7 @@ public class GenericApplicationContext extends AbstractApplicationContext implem
         this.beanFactory.setSerializationId(null);
     }
 
-    /**
+    /** ApplicationContext和BeanFactory是通过组合关系 联系在一起的
      * Return the single internal BeanFactory held by this context
      * (as ConfigurableListableBeanFactory).
      */

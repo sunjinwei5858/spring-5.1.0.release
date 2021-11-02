@@ -552,6 +552,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
             // Tell the subclass to refresh the internal bean factory.
             /**
              * 2。初始化BeanFactory【注意：xml和注解方式获取方式不一样，即处理逻辑不一样】
+			 * ApplicationContext和BeanFactory是组合关系!!!!, 抽象父类AbstractApplicationContext的子类GenericApplicationContext里面存储了BeanFactory
+			 *
              * 目的：因为ApplicationContext是BeanFactory的功能上的扩展，
              * 那么经过obtainFreshBeanFactory方法的ApplicationContext才有了BeanFactory的全部功能。
              * 【获取ApplicationContext中组合的BeanFactory】
