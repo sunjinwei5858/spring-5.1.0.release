@@ -16,26 +16,22 @@
 
 package org.springframework.context.support;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PlaceholderConfigurerSupport;
 import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.ConfigurablePropertyResolver;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.env.PropertySource;
-import org.springframework.core.env.PropertySources;
-import org.springframework.core.env.PropertySourcesPropertyResolver;
+import org.springframework.core.env.*;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringValueResolver;
 
+import java.io.IOException;
+import java.util.Properties;
+
 /**
+ * 它是一个特殊的BeanFactoryPostProcessor，用于解析Bean配置中的${…}参数占位符。
+ *
  * Specialization of {@link PlaceholderConfigurerSupport} that resolves ${...} placeholders
  * within bean definition property values and {@code @Value} annotations against the current
  * Spring {@link Environment} and its set of {@link PropertySources}.
@@ -110,6 +106,7 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 
 
 	/**
+	 * 它是一个特殊的BeanFactoryPostProcessor，用于解析Bean配置中的${…}参数占位符。
 	 * Processing occurs by replacing ${...} placeholders in bean definitions by resolving each
 	 * against this configurer's set of {@link PropertySources}, which includes:
 	 * <ul>
