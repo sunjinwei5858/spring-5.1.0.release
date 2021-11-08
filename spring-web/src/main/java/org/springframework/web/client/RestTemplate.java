@@ -64,11 +64,14 @@ import org.springframework.web.util.DefaultUriBuilderFactory.EncodingMode;
 import org.springframework.web.util.UriTemplateHandler;
 
 /**
- * RestTemplate是spring web 中第一个访问第三方Restful API接口的网络请求框架。
+ * 1.RestTemplate是spring web 中第一个访问第三方Restful API接口的网络请求框架。
  * ps：之前自己还以为RestTemplate是ribbon的类。
  *
- * 单纯的注入RestTemplate 是不具备负载均衡能力的，如果通过服务名的方式来调用 那么就会报错。
- * 需要让RestTemplate有负载均衡能力 那么需要使用注解@LoadBalanced来标记
+ * 2.单纯的注入RestTemplate 是不具备负载均衡能力的，如果通过服务名的方式来调用 那么就会报错。
+ * 需要让RestTemplate有负载均衡能力 那么需要使用注解@LoadBalanced来标记.
+ *
+ * 3.加了@LoadBalanced注解 那么就会添加拦截器，加在RestTemplate的抽象父类InterceptingHttpAccessor的属性上
+ *
  *
  * Synchronous client to perform HTTP requests, exposing a simple, template
  * method API over underlying HTTP client libraries such as the JDK

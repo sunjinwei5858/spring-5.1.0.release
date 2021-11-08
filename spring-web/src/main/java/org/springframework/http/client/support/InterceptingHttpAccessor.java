@@ -27,7 +27,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
 /**
- * RestTemplate的抽象父类 在这里会进行设置拦截器ClientHttpRequestInterceptor
+ * RestTemplate的抽象父类 在这里会进行设置拦截器ClientHttpRequestInterceptor!!!!
+ * 拦截器的作用是将服务名字换成ip
  *
  * Base class for {@link org.springframework.web.client.RestTemplate}
  * and other HTTP accessing gateway helpers, adding interceptor-related
