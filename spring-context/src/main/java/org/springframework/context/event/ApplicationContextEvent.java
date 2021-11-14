@@ -20,6 +20,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 
 /**
+ * 1、ApplicationEvent最重要的子类是ApplicationContextEvent抽象类
+ * 2、该类是spring容器context生命周期事件的基类
+ * 3、该类有四个子类：
+ * 		1.ContextRefreshedEvent：当spring容器context刷新时触发
+ * 		2.ContextStartedEvent：当spring容器context启动后触发
+ * 		3.ContextStopperEvent：当spring容器context停止时触发
+ * 		4.ContextClosedEvent：当spring容器context关闭时触发，容器被关闭时，其管理的所有单例bean都被销毁
+ *
+ * 4、以上四个事件就是spring容器生命周期的四个事件，
+ * 当每个事件触发时，相关的监听器就会监听到相应事件，
+ * 然后触发onApplicationEvent方法，此时就可以做一些容器，
+ * 同时这些容器事件跟spring的后置处理器一样，留给用户扩展自定义逻辑，作为暴露的扩展点。
+ *
  * Base class for events raised for an {@code ApplicationContext}.
  *
  * @author Juergen Hoeller
