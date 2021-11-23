@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
+ * bean创建过程1：IOC容器获取Bean的入口为AbstractBeanFactory类的getBean方法
+ *
  * Abstract base class for {@link org.springframework.beans.factory.BeanFactory}
  * implementations, providing the full capabilities of the
  * {@link org.springframework.beans.factory.config.ConfigurableBeanFactory} SPI.
@@ -189,6 +191,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
     // Implementation of BeanFactory interface
     //---------------------------------------------------------------------
 
+	/**
+	 * 1 IOC容器获取Bean的入口为AbstractBeanFactory类的getBean方法
+	 * @param name the name of the bean to retrieve
+	 * @return
+	 * @throws BeansException
+	 */
     @Override
     public Object getBean(String name) throws BeansException {
         return doGetBean(name, null, null, false);
