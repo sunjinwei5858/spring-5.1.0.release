@@ -263,7 +263,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
     }
 
     /**
-     * 获取单例
+     * 如果通过三级缓存的查找都没有找到目标Bean实例，则通过getSingleton(String beanName, ObjectFactory<?> singletonFactory)方法创建
      *
      * Return the (raw) singleton object registered under the given name,
      * creating and registering a new one if none registered yet.
