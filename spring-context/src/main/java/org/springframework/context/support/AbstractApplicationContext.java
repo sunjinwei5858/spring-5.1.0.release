@@ -210,12 +210,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
     private MessageSource messageSource;
 
     /**
+	 * 广播器
      * Helper class used in event publishing.
      */
     @Nullable
     private ApplicationEventMulticaster applicationEventMulticaster;
 
     /**
+	 * 监听器集合
      * Statically specified listeners.
      */
     private final Set<ApplicationListener<?>> applicationListeners = new LinkedHashSet<>();
@@ -358,6 +360,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
     }
 
     /**
+	 * spring容器通过实现publisher发布器接口 来发布事件 本质也是委托广播器来发布
      * Publish the given event to all listeners.
      * <p>Note: Listeners get initialized after the MessageSource, to be able
      * to access it within listener implementations. Thus, MessageSource
@@ -411,6 +414,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
         if (this.earlyApplicationEvents != null) {
             this.earlyApplicationEvents.add(applicationEvent);
         } else {
+        	// 使用广播器发布事件
             getApplicationEventMulticaster().multicastEvent(applicationEvent, eventType);
         }
 

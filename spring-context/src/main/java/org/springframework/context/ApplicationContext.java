@@ -24,8 +24,10 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.lang.Nullable;
 
 /**
- * 由BeanFactory派生而来，提供了更多面向实际的功能。
+ * 1、由BeanFactory派生而来，提供了更多面向实际的功能。
  * 继承了ListableBeanFactory和HierarchicalBeanFactory接口。
+ * 2、该接口继承了ApplicationEventPublisher接口，拥有了事件发布的能力
+ * spring容器通过实现该接口的publishEvent方法来发布事件
  * <p>
  * Central interface to provide configuration for an application.
  * This is read-only while the application is running, but may be

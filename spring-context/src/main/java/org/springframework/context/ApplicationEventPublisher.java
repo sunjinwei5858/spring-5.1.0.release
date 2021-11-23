@@ -17,6 +17,10 @@
 package org.springframework.context;
 
 /**
+ * 1、实现了该接口 表明具有广播事件的功能
+ * 2、所以我们的spring容器的父类接口ApplicationContext继承了这个接口，来获取广播事件的功能
+ * 3、该接口封装了发布事件的公共方法，作为ApplicationContext的超级接口，
+ * 4、同时也是委托ApplicationEventMulticaster完成事件发布。
  * Interface that encapsulates event publication functionality.
  * Serves as super-interface for {@link ApplicationContext}.
  *

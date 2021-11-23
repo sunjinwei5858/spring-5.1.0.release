@@ -16,11 +16,8 @@
 
 package org.springframework.context.event;
 
-import java.util.concurrent.Executor;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -28,7 +25,13 @@ import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ErrorHandler;
 
+import java.util.concurrent.Executor;
+
 /**
+ * 1、目前spring只有一个子类实现抽象广播器父类，
+ * 2、支持使用线程池异步广播事件
+ * 3.支持对异步广播事件发生的异常进行处理
+ *
  * Simple implementation of the {@link ApplicationEventMulticaster} interface.
  *
  * <p>Multicasts all events to all registered listeners, leaving it up to
@@ -51,6 +54,9 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	@Nullable
 	private Executor taskExecutor;
 
+	/**
+	 * 异常处理器，errorHandler主要用来当异步广播事件时，若监听器执行异常时，此时利用其来处理catch住的异常
+	 */
 	@Nullable
 	private ErrorHandler errorHandler;
 
@@ -140,10 +146,13 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 		// 2 for循环监听器 让监听器处理event事件 invokeListener
 		for (final ApplicationListener<?> listener : getApplicationListeners(event, type)) {
 			Executor executor = getTaskExecutor();
+			// 是否是异步的 这里并没有使用一个布尔值变量来维护 而是直接判断executor
 			if (executor != null) {
+				// 使用线程池进行异步广播事件
 				executor.execute(() -> invokeListener(listener, event));
 			}
 			else {
+				// 同步广播事件
 				invokeListener(listener, event);
 			}
 		}
@@ -154,6 +163,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	}
 
 	/**
+	 * 支持
 	 * Invoke the given listener with the given event.
 	 * @param listener the ApplicationListener to invoke
 	 * @param event the current event to propagate
@@ -161,6 +171,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	 */
 	protected void invokeListener(ApplicationListener<?> listener, ApplicationEvent event) {
 		ErrorHandler errorHandler = getErrorHandler();
+		// 如果异常不为空 那么可以对事件异常捕获进行处理
 		if (errorHandler != null) {
 			try {
 				doInvokeListener(listener, event);
@@ -177,10 +188,12 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private void doInvokeListener(ApplicationListener listener, ApplicationEvent event) {
 		try {
+			// 回调监听器onApplicationEvent方法 执行监听逻辑
 			listener.onApplicationEvent(event);
 		}
 		catch (ClassCastException ex) {
 			String msg = ex.getMessage();
+			// 打印一些日志
 			if (msg == null || matchesClassCastMessage(msg, event.getClass())) {
 				// Possibly a lambda-defined listener which we could not resolve the generic event type for
 				// -> let's suppress the exception and just log a debug message.

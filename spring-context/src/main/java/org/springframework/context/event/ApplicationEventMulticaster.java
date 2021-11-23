@@ -22,6 +22,8 @@ import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
 
 /**
+ * ApplicationEventMulticaster：广播事件给所有的监听器
+ *
  * Interface to be implemented by objects that can manage a number of
  * {@link ApplicationListener} objects, and publish events to them.
  *
