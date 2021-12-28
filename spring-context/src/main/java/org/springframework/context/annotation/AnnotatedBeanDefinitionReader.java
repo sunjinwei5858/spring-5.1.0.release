@@ -60,6 +60,9 @@ public class AnnotatedBeanDefinitionReader {
 
     private final BeanDefinitionRegistry registry;
 
+    /**
+     * 默认name生成器是AnnotationBeanNameGenerator
+     */
     private BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator();
 
     private ScopeMetadataResolver scopeMetadataResolver = new AnnotationScopeMetadataResolver();
