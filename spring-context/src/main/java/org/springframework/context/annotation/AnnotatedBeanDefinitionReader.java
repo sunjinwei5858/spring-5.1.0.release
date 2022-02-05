@@ -90,7 +90,7 @@ public class AnnotatedBeanDefinitionReader {
     /**
      * 分析1：
      * spring容器构造化的时候会创建AnnotatedBeanDefinitionReader，
-     * AnnotatedBeanDefinitionReader进行构造化的时候会进行注册5个bean定义【4个BeanFactory后置处理器+1个事件监听工厂】，
+     * AnnotatedBeanDefinitionReader进行构造化的时候会进行注册5个bean定义【2个BeanFactory后置处理器+2个Bean后置处理器+1个事件监听工厂】，
      * 之前自己都不知道这几个后置处理器的bean定义是何时注册的，
      * 因为在此处已经注册好ConfigurationClassPostProcessor这些后置处理器，所以后续会进行getBean操作，
      * 然后添加到单例缓存池，在refresh方法中，会有很多地方需要foreach后置处理器，进行调用BeanFactoryPostProcessor接口
@@ -113,8 +113,8 @@ public class AnnotatedBeanDefinitionReader {
         this.registry = registry;
         this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
         /**
-         * 注册五个bean定义：
-         * 4个BeanFactoryPostProcessor后置处理器：ConfigurationClassPostProcessor，AutowiredAnnotationBeanPostProcessor，CommonAnnotationBeanPostProcessor，EventListenerMethodProcessor，
+         * 注册五个bean定义【2个BeanFactory后置处理器+2个Bean后置处理器+1个事件监听工厂】：
+         * 4个后置处理器：ConfigurationClassPostProcessor，AutowiredAnnotationBeanPostProcessor，CommonAnnotationBeanPostProcessor，EventListenerMethodProcessor，
          * 1个事件监听工厂的bean定义：DefaultEventListenerFactory。
          * 如果开启了jpa 那么也会注册PersistenceAnnotationBeanPostProcessor后置处理器
          *

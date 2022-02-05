@@ -613,7 +613,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
                 // Initialize message source for this context.
                 /**
-                 * 7。国际化的配置
+                 * 7。国际化的配置 springboot通过@Bean的方式自己创建了messageSource
                  */
                 initMessageSource();
 
@@ -866,6 +866,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
     protected void initMessageSource() {
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
         if (beanFactory.containsLocalBean(MESSAGE_SOURCE_BEAN_NAME)) {
+			// springboot自己创建了messageSource （@Bean的方式）
             this.messageSource = beanFactory.getBean(MESSAGE_SOURCE_BEAN_NAME, MessageSource.class);
             // Make MessageSource aware of parent MessageSource.
             if (this.parent != null && this.messageSource instanceof HierarchicalMessageSource) {
