@@ -556,7 +556,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
             // Tell the subclass to refresh the internal bean factory.
             /**
-             * 2。初始化BeanFactory【注意：xml和注解方式获取方式不一样，即处理逻辑不一样】【也叫做BeanFactory创建阶段】
+             * 2。【BeanFactory创建阶段】【注意：xml和注解方式获取方式不一样，即处理逻辑不一样】
 			 * ApplicationContext和BeanFactory是组合关系!!!!, 抽象父类AbstractApplicationContext的子类GenericApplicationContext里面存储了BeanFactory
 			 *
              * 目的：因为ApplicationContext是BeanFactory的功能上的扩展，
@@ -574,19 +574,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
              * @see https://blog.csdn.net/java_lyvee/article/details/105092466
              * 这篇博客进行了验证ApplicationContext
              * 并不是在singltonObjects单例缓存池，又是存储在哪里，并且是什么时候进行注入的？
+			 * 【BeanFactory准备阶段】
              */
             prepareBeanFactory(beanFactory);
 
             try {
                 // Allows post-processing of the bean factory in context subclasses.
                 /**
-                 * 4。目前没做实现，相当于留给子类进行实现的，做扩展的
+                 * 4。目前没做实现，相当于留给子类进行实现的，做扩展的【BeanFactory后置处理阶段一】
                  */
                 postProcessBeanFactory(beanFactory);
 
                 // Invoke factory processors registered as beans in the context.
                 /**
-                 * 5。实例化BeanFactoryPostProcessor后置处理器并且回调方法，【调用bean工厂的后置处理器】
+                 * 5。实例化BeanFactoryPostProcessor后置处理器并且回调方法，【调用bean工厂的后置处理器】【BeanFactory后置处理阶段二】
                  * 点进方法可以看出：BeanDefinitionRegistryPostProcessor比BeanFactoryPostProcessor接口的处理时机更早
                  *
                  * BeanFactoryPostProcessor Instantiate and invoke all registered BeanFactoryPostProcessor beans,
