@@ -550,12 +550,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
             // Prepare this context for refreshing.
             /**
              * 1。环境准备：设置flag 时间 初始化properties
+			 * 【spring应用上下文启动准备阶段】
              */
             prepareRefresh();
 
             // Tell the subclass to refresh the internal bean factory.
             /**
-             * 2。初始化BeanFactory【注意：xml和注解方式获取方式不一样，即处理逻辑不一样】
+             * 2。初始化BeanFactory【注意：xml和注解方式获取方式不一样，即处理逻辑不一样】【也叫做BeanFactory创建阶段】
 			 * ApplicationContext和BeanFactory是组合关系!!!!, 抽象父类AbstractApplicationContext的子类GenericApplicationContext里面存储了BeanFactory
 			 *
              * 目的：因为ApplicationContext是BeanFactory的功能上的扩展，
