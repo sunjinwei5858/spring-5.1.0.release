@@ -668,6 +668,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
     }
 
     /**
+	 * 注意：
+	 * springboot默认的servlet项目的ApplicationContext实现类是AnnotationConfigServletWebServerApplicationContext
+	 * 该类重写类prepareRefresh 方法，但是并没有完全改变逻辑，只是在super.prepareRefresh之前调用了this.scanner.clearCache();
+	 *
      * Prepare this context for refreshing, setting its startup date and
      * active flag as well as performing any initialization of property sources.
      */
@@ -685,6 +689,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
         }
 
         // Initialize any placeholder property sources in the context environment
+		// 这里会初始化environment
         initPropertySources();
 
         // Validate that all properties marked as required are resolvable
